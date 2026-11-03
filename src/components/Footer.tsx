@@ -5,7 +5,7 @@ export default function Footer() {
 
 	return (
 		<footer className={styles.footer}>
-			&copy; {today.getFullYear()} Stapx Steve [林槐].
+			&copy; {today.getFullYear()} Stapx Steve [林槐].&nbsp;
 			<a rel="nofollow" href="http://beian.miit.gov.cn" target="_blank">苏ICP备2026019464号</a>
 		</footer>
 	);

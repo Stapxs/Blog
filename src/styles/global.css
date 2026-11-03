@@ -172,6 +172,8 @@ input {
 }
 table {
 	width: 100%;
+	display: block; /* 长表格横向滚动，不撑破容器 */
+	overflow-x: auto;
 }
 img {
 	max-width: 100%;
@@ -186,6 +188,7 @@ code {
 pre {
 	padding: 1.5em;
 	border-radius: 8px;
+	overflow-x: auto; /* 长代码行横向滚动，不撑破容器 */
 }
 pre > code {
 	all: unset;
@@ -222,12 +225,6 @@ hr {
 	clip-path: inset(50%);
 	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
 	white-space: nowrap;
-}
-
-/* ============ 图片对角线揭示 ============ */
-/* head 内联脚本在解析前加类；data-img-revealed 标记后解除隐藏（无 JS 不生效） */
-html.img-reveal main img:not([data-img-revealed]) {
-	clip-path: polygon(0px 0px, 0px 0px, 0px 0px);
 }
 
 /* ============ 搜索面板 ============ */
@@ -284,6 +281,28 @@ html.img-reveal main img:not([data-img-revealed]) {
 .search-input::placeholder {
 	color: rgb(var(--gray));
 	opacity: 0.7;
+}
+
+/* 打字机 placeholder：JS 逐字写入，光标由 steps 动画提供 */
+.search-input[data-typing]::placeholder {
+	color: transparent; /* 逐字写入期间隐藏原生占位符 */
+}
+
+.search-input[data-cursor]::after {
+	content: "";
+	display: inline-block;
+	width: 1ch;
+	height: 1em;
+	margin-left: 1px;
+	background: rgb(var(--gray));
+	vertical-align: -0.15em;
+	animation: caret-blink 0.9s steps(1) infinite;
+}
+
+@keyframes caret-blink {
+	50% {
+		opacity: 0;
+	}
 }
 
 @keyframes search-panel-in {

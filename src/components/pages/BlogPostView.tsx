@@ -32,7 +32,7 @@ export default function BlogPostView({
 					{location && <PageTitle>{location}</PageTitle>}
 					<div data-boot="cmd">
 						<span className="cmd-prompt">&gt;</span> <span className="cmd-name">mdcat</span>{' '}
-						<span className="cmd-arg">{title}.md</span>
+						<span className="cmd-arg">'{title}.md'</span>
 					</div>
 					<div className={styles.content} data-boot="rest">
 						<div className={styles.titleBlock}>
