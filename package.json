@@ -1,7 +1,11 @@
 {
-  "name": "blog",
-  "type": "module",
+  "name": "stapxs-blog",
   "version": "0.0.1",
+  "author": "Stapx Steve [林槐]",
+  "description": "林槐的杂货铺",
+  "homepage": "https://blog.stapxs.cn",
+  "license": "AGPL-3.0-only",
+  "type": "module",
   "engines": {
     "node": ">=22.23.4"
   },
@@ -13,9 +17,16 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.2",
+    "@astrojs/react": "^7.1.2",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "sharp": "^0.35.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
   }
 }

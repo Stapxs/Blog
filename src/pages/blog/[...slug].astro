@@ -1,6 +1,8 @@
 ---
+import { getImage } from 'astro:assets';
 import { type CollectionEntry, getCollection, render } from 'astro:content';
-import BlogPost from '../../layouts/BlogPost.astro';
+import BlogPostView from '../../components/pages/BlogPostView';
+import Root from '../../layouts/Root.astro';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
@@ -9,12 +11,26 @@ export async function getStaticPaths() {
 		props: post,
 	}));
 }
+
 type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
 const { Content } = await render(post);
+
+const hero = post.data.heroImage
+	? await getImage({ src: post.data.heroImage, width: 1020, height: 510 })
+	: undefined;
 ---
 
-<BlogPost {...post.data}>
-	<Content />
-</BlogPost>
+<Root title={post.data.title} description={post.data.description}>
+	<BlogPostView
+		title={post.data.title}
+		pubDate={post.data.pubDate.toISOString()}
+		updatedDate={post.data.updatedDate?.toISOString()}
+		heroUrl={hero?.src}
+		heroWidth={hero?.width}
+		heroHeight={hero?.height}
+	>
+		<Content />
+	</BlogPostView>
+</Root>

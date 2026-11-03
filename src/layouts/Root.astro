@@ -1,0 +1,42 @@
+---
+import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
+import type { ImageMetadata } from 'astro';
+import BaseHead from '../components/BaseHead';
+import Footer from '../components/Footer';
+import Header from '../components/Header';
+import FallbackImage from '../assets/blog-placeholder-1.jpg';
+import { SITE_TITLE } from '../consts';
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+	description: string;
+	image?: ImageMetadata;
+}
+
+const { title, description, image = FallbackImage } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={title}
+			description={description}
+			image={image.src}
+			site={Astro.site?.href ?? Astro.url.origin}
+			pathname={Astro.url.pathname}
+			pageUrl={Astro.url.href}
+			generator={Astro.generator}
+		/>
+		<Font cssVariable="--font-atkinson" preload />
+		<!-- SPA-style navigation: swaps pages without a full reload -->
+		<ClientRouter />
+	</head>
+	<body>
+		<Header siteTitle={SITE_TITLE} currentPath={Astro.url.pathname} />
+		<slot />
+		<Footer />
+	</body>
+</html>
