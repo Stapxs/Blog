@@ -431,12 +431,11 @@ const { title, description, image = FallbackImage } = Astro.props;
 
             if (!MOTION_OK()) return;
 
-            // ========== 高度形变：交换后立即开始 ==========
-            // 内容自交换起就是新高度（real 隐藏但占位）→ 容器同步过渡、不慢一拍。
-            // overflow:hidden 保持到入场时解除：退场（~0.9s）比过渡（0.45s）长，
-            // 多出的时间正好用来裁剪溶解中的旧内容，不会外溢。
+            // ========== 高度形变：钉住旧高度，入场动画结束后再过渡 ==========
+            // 全程钉在旧高度（退场期间旧幽灵层正好装下，无需裁剪）；
+            // 入场动画（900ms 解密）完成后开始过渡到新高度（0.45s）。
             // 注意：目标高度必须在钉住之前测量，否则 offsetHeight 读到内联旧高度。
-            let heightSettle: (() => void) | null = null;
+            let heightMorph: (() => void) | null = null;
             const mainEl = document.querySelector(
                 '[data-boot="main"]',
             ) as HTMLElement | null;
@@ -445,22 +444,37 @@ const { title, description, image = FallbackImage } = Astro.props;
                 const to = mainEl.offsetHeight; // 钉住前测量自然高度
                 mainEl.style.height = `${from}px`;
                 if (Math.abs(to - from) > 2) {
-                    mainEl.style.overflow = "hidden";
-                    mainEl.getBoundingClientRect(); // 强制回流，让起始高度生效
-                    mainEl.style.transition = "height 0.45s ease";
-                    mainEl.style.height = `${to}px`;
-                    heightSettle = () => {
-                        mainEl.style.height = "";
-                        mainEl.style.transition = "";
-                        mainEl.style.overflow = "";
+                    heightMorph = () => {
+                        mainEl.style.overflow = "hidden";
+                        mainEl.getBoundingClientRect(); // 强制回流，让起始高度生效
+                        mainEl.style.transition = "height 0.45s ease";
+                        mainEl.style.height = `${to}px`;
+                        let settled = false;
+                        const settle = () => {
+                            if (settled) return;
+                            settled = true;
+                            mainEl.style.height = "";
+                            mainEl.style.transition = "";
+                            mainEl.style.overflow = "";
+                        };
+                        mainEl.addEventListener(
+                            "transitionend",
+                            (ev) => {
+                                if (
+                                    ev.target === mainEl &&
+                                    ev.propertyName === "height"
+                                )
+                                    settle();
+                            },
+                            { once: true },
+                        );
+                        window.setTimeout(settle, 700);
                     };
-                    // 独立兜底：即使入场流程异常，1.2s 后也解除
-                    window.setTimeout(() => {
-                        heightSettle?.();
-                        heightSettle = null;
-                    }, 1200);
                 } else {
-                    mainEl.style.height = "";
+                    // 高度几乎不变：入场时直接解除钉住
+                    heightMorph = () => {
+                        mainEl.style.height = "";
+                    };
                 }
             }
             prevMainHeight = null;
@@ -579,9 +593,9 @@ const { title, description, image = FallbackImage } = Astro.props;
                     .forEach((el) => {
                         if (el.style.visibility === "hidden") reveal(el);
                     });
-                // 入场时解除高度形变的内联样式（此刻过渡早已完成，无跳变）
-                heightSettle?.();
-                heightSettle = null;
+                // 新内容出现的同时开始容器高度过渡（与入场动画同步）
+                heightMorph?.();
+                heightMorph = null;
             };
             if (restPairs.length > 0) {
                 // 轮询等全部幽灵层自行移除（退场动画播完）后入场
@@ -610,8 +624,8 @@ const { title, description, image = FallbackImage } = Astro.props;
                         h.replaceWith(r);
                     }
                 });
-                heightSettle?.();
-                heightSettle = null;
+                heightMorph?.();
+                heightMorph = null;
             }, 3000);
         });
 
