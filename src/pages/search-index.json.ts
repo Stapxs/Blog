@@ -11,6 +11,7 @@ export const GET: APIRoute = async () => {
 		title: post.data.title,
 		author: post.data.author,
 		category: post.data.category,
+		tags: post.data.tags,
 		pubDate: post.data.pubDate.toISOString(),
 		url: `/archives/${post.id}/`,
 		content: (post.body ?? '').toLowerCase(),

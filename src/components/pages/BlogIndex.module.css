@@ -61,6 +61,16 @@
 	color: rgb(var(--gray));
 }
 
+/* 行尾最后一个标签：与日期同色，label 图标 + 文本 */
+.tag {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35em;
+	white-space: nowrap;
+	color: rgb(var(--gray));
+}
+
 .title {
 	flex: 1 1 0;
 	min-width: 0;

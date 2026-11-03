@@ -43,20 +43,39 @@ import SearchView from '../components/pages/SearchView';
 		}
 
 		window.__searchIndex.then(function (index) {
-			// 空格分隔多关键词 = 全部命中（AND）；中文子串直接匹配
-			var terms = q.toLowerCase().split(/\s+/).filter(Boolean);
-			var hits = terms.length
-				? index.filter(function (p) {
-						var title = String(p.title).toLowerCase();
-						return terms.every(function (t) {
-							return (
-								title.indexOf(t) !== -1 ||
-								String(p.category).toLowerCase().indexOf(t) !== -1 ||
-								String(p.content).indexOf(t) !== -1
-							);
-						});
-					})
-				: [];
+			// 词法：cat:xxx / tag:xxx 为字段过滤（精确匹配），其余为全文子串（AND）
+			var rawTerms = q.split(/\s+/).filter(Boolean);
+			var catF = null;
+			var tagF = null;
+			var terms = [];
+			rawTerms.forEach(function (t) {
+				var lt = t.toLowerCase();
+				if (lt.indexOf('cat:') === 0) catF = t.slice(4);
+				else if (lt.indexOf('tag:') === 0) tagF = t.slice(4);
+				else terms.push(lt);
+			});
+			var hits = index.filter(function (p) {
+				if (catF && String(p.category) !== catF) return false;
+				if (tagF) {
+					var tags = p.tags || [];
+					var ok = tags.some(function (tg) {
+						return tg === tagF;
+					});
+					if (!ok) return false;
+				}
+				if (terms.length) {
+					var title = String(p.title).toLowerCase();
+					var cat = String(p.category).toLowerCase();
+					return terms.every(function (t) {
+						return (
+							title.indexOf(t) !== -1 ||
+							cat.indexOf(t) !== -1 ||
+							String(p.content).indexOf(t) !== -1
+						);
+					});
+				}
+				return true;
+			});
 
 			var last = Math.max(1, Math.ceil(hits.length / PAGE_SIZE));
 			var current = Math.min(page, last);
@@ -71,9 +90,9 @@ import SearchView from '../components/pages/SearchView';
 
 			if (slice.length === 0) {
 				var li = document.createElement('li');
-				li.textContent = terms.length
+				li.textContent = rawTerms.length
 					? '> grep: no matches found'
-					: '> 提示：在 URL 上加上 ?q=关键词 开始搜索';
+					: '> 提示：在 URL 上加上 ?q=关键词 开始搜索（支持 cat:分类 tag:标签 过滤）';
 				li.style.color = 'rgb(var(--gray))';
 				li.style.padding = '0.4em 0.6em';
 				list.appendChild(li);

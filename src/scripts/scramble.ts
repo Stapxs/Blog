@@ -60,6 +60,38 @@ const randomGlyph = (reverse: boolean, wide: boolean): string => {
 const setChar = (s: string, i: number, ch: string): string =>
 	i > s.length - 1 || i < 0 ? s : s.substring(0, i) + ch + s.substring(i + 1);
 
+/** 把元素的所有文本节点替换为宽度匹配的空白模板（行长不变、零布局抖动）。
+ *  用于"滚到哪里、哪里解密"的滚动揭示：屏外段落先铺空白，进入视口再 play()。
+ *  原文保存在 WeakMap 里，play() 会先恢复再捕获，避免把空白当成揭示目标。 */
+const originals = new WeakMap<HTMLElement, string[]>();
+
+export function blankNode(node: HTMLElement): void {
+	const nodes = collectTextNodes(node);
+	originals.set(node, nodes.map((n) => n.nodeValue));
+	const lens = nodes.map((n) => n.nodeValue.length);
+	const text = nodes.map((n) => n.nodeValue).join('');
+	const blank = text
+		.split(' ')
+		.map((w) => [...w].map((ch) => (isWide(ch) ? WIDE_SPACE : NBSP)).join(''))
+		.join(' ');
+	let off = 0;
+	nodes.forEach((n, i) => {
+		n.nodeValue = blank.slice(off, off + lens[i]);
+		off += lens[i];
+	});
+}
+
+/** 恢复 blankNode 保存的原文（若未 blank 过则无操作） */
+export function restoreNode(node: HTMLElement): void {
+	const saved = originals.get(node);
+	if (!saved) return;
+	const nodes = collectTextNodes(node);
+	nodes.forEach((n, i) => {
+		if (saved[i] !== undefined && saved[i] !== null) n.nodeValue = saved[i];
+	});
+	originals.delete(node);
+}
+
 export interface ScrambleOptions {
 	duration?: number;
 	delay?: number;
@@ -141,6 +173,8 @@ function scramble(node: HTMLElement, { duration = 1000, delay = 0, reverse = fal
  * 性能：用 performance.now() 而非 rAF 回调时间戳，
  * 后者在部分环境（无头浏览器、后台标签页节流）下与真实时间不同步。 */
 export function play(node: HTMLElement, opts: ScrambleOptions = {}): void {
+	// 若该元素曾被 blankNode 铺成空白，先恢复原文（否则空白会被当成揭示目标）
+	restoreNode(node);
 	const t = scramble(node, opts);
 	const start = performance.now() + (t.delay || 0);
 	const from = t.reverse ? 1 : 0;

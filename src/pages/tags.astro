@@ -1,0 +1,18 @@
+---
+import { getCollection } from 'astro:content';
+import CategoryTagsView from '../components/pages/CategoryTagsView';
+import Root from '../layouts/Root.astro';
+
+const posts = await getCollection('blog');
+const counts = new Map<string, number>();
+posts.forEach((p) =>
+	(p.data.tags ?? []).forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1)),
+);
+const items = [...counts.entries()]
+	.map(([name, count]) => ({ name, count }))
+	.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+---
+
+<Root title="Tags" description="全部标签">
+	<CategoryTagsView mode="tags" items={items} />
+</Root>

@@ -21,6 +21,10 @@ const items: BlogIndexPost[] = page.data.map((post) => ({
     pubDate: formatDateLocal(post.data.pubDate),
     title: post.data.title,
     url: `/archives/${post.id}/`,
+    lastTag: (() => {
+        const tags = post.data.tags ?? [];
+        return tags.length > 0 ? tags[tags.length - 1] : undefined;
+    })(),
 }));
 ---
 

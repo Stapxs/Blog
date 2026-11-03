@@ -28,6 +28,12 @@ export default function Header({ siteTitle, currentPath }: Props) {
 					<HeaderLink href="/" currentPath={currentPath}>
 						./Archives
 					</HeaderLink>
+					<HeaderLink href="/category" currentPath={currentPath}>
+						./Category
+					</HeaderLink>
+					<HeaderLink href="/tags" currentPath={currentPath}>
+						./Tags
+					</HeaderLink>
 					<HeaderLink href="/about" currentPath={currentPath}>
 						./About
 					</HeaderLink>

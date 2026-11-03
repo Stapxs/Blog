@@ -8,6 +8,8 @@ export interface BlogIndexPost {
 	pubDate: string;
 	title: string;
 	url: string;
+	/** 最后一个标签（无标签则不渲染）。 */
+	lastTag?: string;
 }
 
 export interface BlogPagination {
@@ -42,6 +44,7 @@ export default function BlogIndex({ posts, pagination }: Props) {
 							<span className={styles.category}>{post.category}</span>
 							<span className={styles.date}>{post.pubDate}</span>
 							<span className={styles.title}>{post.title}</span>
+							{post.lastTag && (<span className={styles.tag}>{post.lastTag}</span>)}
 						</a>
 					</li>
 				))}

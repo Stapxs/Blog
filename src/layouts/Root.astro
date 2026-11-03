@@ -8,9 +8,10 @@ import Header from "../components/Header";
 import FallbackImage from "../assets/blog-placeholder-1.png";
 import { SITE_TITLE } from "../consts";
 import "../styles/global.css";
-/* 切页幽灵层会把旧页面的元素带进新页面，因此两组页面级样式需要全站常驻 */
+/* 切页幽灵层会把旧页面的元素带进新页面，因此各组页面级样式需要全站常驻 */
 import "../components/pages/BlogIndex.module.css";
 import "../components/pages/BlogPostView.module.css";
+import "../components/pages/CategoryTagsView.module.css";
 
 interface Props {
     title: string;
@@ -35,6 +36,15 @@ const { title, description, image = FallbackImage } = Astro.props;
         />
         <script is:inline>
             (function () {
+                // 图片对角线揭示：在解析图片前先隐藏（CSS 类），
+                // 动画结束后由 JS 打 data-img-revealed 解除；reduced-motion 不加类
+                if (
+                    !window.matchMedia("(prefers-reduced-motion: reduce)")
+                        .matches
+                ) {
+                    document.documentElement.classList.add("img-reveal");
+                }
+
                 // 首次加载标记 boot 序列（在首屏渲染前隐藏分级元素）
                 if (
                     !window.__bootPlayed &&
@@ -246,11 +256,20 @@ const { title, description, image = FallbackImage } = Astro.props;
     <body>
         <Header siteTitle={SITE_TITLE} currentPath={Astro.url.pathname} />
         {/* 搜索面板：无遮罩、宽度为正文一半、标题压上边框居中 */}
-        <div class="search-panel" id="search-panel" role="dialog" aria-label="搜索">
+        <div
+            class="search-panel"
+            id="search-panel"
+            role="dialog"
+            aria-label="搜索"
+        >
             <span class="search-title">搜索</span>
             <div class="search-row">
                 <span class="cmd-prompt">&gt;</span>
-                <input class="search-input" type="text" placeholder="输入关键词…" />
+                <input
+                    class="search-input"
+                    type="text"
+                    placeholder="输入关键词…"
+                />
             </div>
         </div>
         <slot />
@@ -259,7 +278,7 @@ const { title, description, image = FallbackImage } = Astro.props;
 
     {/* 首次加载 boot 序列 + 页面切换编排（模块脚本只执行一次） */}
     <script>
-        import { play } from "../scripts/scramble";
+        import { blankNode, play } from "../scripts/scramble";
 
         const html = document.documentElement;
         const MOTION_OK = () =>
@@ -301,10 +320,10 @@ const { title, description, image = FallbackImage } = Astro.props;
                 show(cmd);
             }, 2300);
 
-            /* P4（t≈3.4s）：列表 / 正文 —— 打字机 */
+            /* P4（t≈3.4s）：列表 / 正文 —— 打字机（视口感知，仅可见单元） */
             window.setTimeout(() => {
                 all('[data-boot="rest"]').forEach((el, i) => {
-                    play(el as HTMLElement, { duration: 1300, delay: i * 200 });
+                    splitScramble(el as HTMLElement, i * 200);
                     show(el);
                 });
             }, 3400);
@@ -312,6 +331,48 @@ const { title, description, image = FallbackImage } = Astro.props;
             /* 收尾：解除 boot 态；若中途发生页面切换则立即解除 */
             window.setTimeout(() => html.classList.remove("boot"), 5300);
         }
+
+        /* ================= 视口感知的揭示 =================
+         * 文字按子元素拆成单元：视口内的立刻解密（错峰），
+         * 屏外的先铺宽度匹配的空白模板（页面高度不变、零布局抖动），
+         * 滚动进入视口时再解密 —— 随滚动逐段显现。 */
+        const textIO =
+            "IntersectionObserver" in window
+                ? new IntersectionObserver(
+                      (entries) => {
+                          entries.forEach((en) => {
+                              if (en.isIntersecting) {
+                                  textIO.unobserve(en.target);
+                                  play(en.target as HTMLElement, {
+                                      duration: 750,
+                                  });
+                              }
+                          });
+                      },
+                      { rootMargin: "0px" },
+                  )
+                : null;
+
+        const splitScramble = function (el: HTMLElement, baseDelay = 0) {
+            const children = Array.from(el.children) as HTMLElement[];
+            const units = children.length > 1 ? children : [el];
+            let idx = 0;
+            units.forEach((u) => {
+                if (!u.textContent || !u.textContent.trim()) return; // 跳过无文本单元
+                const r = u.getBoundingClientRect();
+                const inView =
+                    r.top < window.innerHeight + 80 && r.bottom > -80;
+                if (inView) {
+                    play(u, { duration: 750, delay: baseDelay + idx * 140 });
+                    idx++;
+                } else if (textIO) {
+                    blankNode(u); // 屏外：先空白占位，滚动到位再解密
+                    textIO.observe(u);
+                } else {
+                    play(u, { duration: 750, delay: baseDelay }); // 无 IO 支持：直接播
+                }
+            });
+        };
 
         /* ================= 页面切换编排 =================
          * 顶栏 / main 框架在所有页面渲染一致 → 硬交换视觉上不动。
@@ -419,14 +480,19 @@ const { title, description, image = FallbackImage } = Astro.props;
             );
             if (hosts.length === 0) return;
 
-            const reveal = (real: HTMLElement) => {
+            const reveal = (real: HTMLElement, split = false) => {
                 real.style.visibility = "visible";
-                play(real, {
-                    duration: 900,
-                    onDone: () => {
-                        real.style.visibility = "";
-                    },
-                });
+                if (split) {
+                    // 视口感知：只解密可见单元
+                    splitScramble(real);
+                } else {
+                    play(real, {
+                        duration: 900,
+                        onDone: () => {
+                            real.style.visibility = "";
+                        },
+                    });
+                }
             };
 
             // real 统一用 [data-boot] 查找（不依赖幽灵层是否已移除）
@@ -473,7 +539,7 @@ const { title, description, image = FallbackImage } = Astro.props;
                 restRevealed = true;
                 restPairs.forEach(({ host, real }) => {
                     host.querySelector("[data-ghost]")?.remove();
-                    reveal(real);
+                    reveal(real, true); // 视口感知拆分揭示
                     host.replaceWith(real);
                 });
             };
@@ -585,15 +651,43 @@ const { title, description, image = FallbackImage } = Astro.props;
             return `polygon(${pts.join(",")})`;
         };
 
+        // 视口观察器：图片进入视口时才播放揭示（滚动到位的懒加载图自然触发）
+        const imgIO =
+            "IntersectionObserver" in window
+                ? new IntersectionObserver(
+                      (entries) => {
+                          entries.forEach((en) => {
+                              if (en.isIntersecting) {
+                                  imgIO.unobserve(en.target);
+                                  const fn = (
+                                      en.target as HTMLElement & {
+                                          __revealRun?: () => void;
+                                      }
+                                  ).__revealRun;
+                                  if (fn) fn();
+                              }
+                          });
+                      },
+                      { rootMargin: "80px" },
+                  )
+                : null;
+
         const revealImg = function (img: HTMLImageElement) {
             if (img.dataset.imgReveal) return;
             img.dataset.imgReveal = "1";
+            const finish = function () {
+                img.dataset.imgRevealed = "1";
+            };
             const run = function () {
-                if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+                if (
+                    window.matchMedia("(prefers-reduced-motion: reduce)")
+                        .matches
+                ) {
+                    finish();
                     return;
+                }
                 const w = img.clientWidth || 100;
                 const h = img.clientHeight || 100;
-                img.style.clipPath = diagPolygon(w, h, 0); // 先藏住，防闪全图
                 const N = 24;
                 const frames: Array<{ clipPath: string; offset: number }> = [];
                 for (let i = 0; i <= N; i++) {
@@ -602,19 +696,35 @@ const { title, description, image = FallbackImage } = Astro.props;
                         offset: i / N,
                     });
                 }
+                // CSS 类负责动画前的隐藏，WAAPI 动画期间覆盖之
                 const anim = img.animate(frames, {
                     duration: 550,
                     easing: "ease-out",
                 });
-                anim.onfinish = () => {
-                    img.style.clipPath = "";
-                };
+                anim.onfinish = finish;
+                anim.oncancel = finish;
+                window.setTimeout(finish, 900); // 兜底
             };
-            // boot 序列未结束时推迟（等正文显示后再揭示）
-            if (document.documentElement.classList.contains("boot")) {
-                window.setTimeout(run, 5500);
+            const whenReady = function () {
+                // boot 序列未结束时推迟（等正文 P4 显示后再揭示）
+                if (document.documentElement.classList.contains("boot")) {
+                    window.setTimeout(run, 5500);
+                    return;
+                }
+                // 已在视口内（或即将进入）才播放；屏外的等滚动到位
+                if (imgIO) {
+                    (
+                        img as HTMLElement & { __revealRun?: () => void }
+                    ).__revealRun = run;
+                    imgIO.observe(img);
+                } else {
+                    run();
+                }
+            };
+            if (img.complete && img.naturalWidth > 0) {
+                requestAnimationFrame(whenReady);
             } else {
-                run();
+                img.addEventListener("load", whenReady, { once: true });
             }
         };
 
@@ -624,6 +734,9 @@ const { title, description, image = FallbackImage } = Astro.props;
                 .forEach((el) => revealImg(el as HTMLImageElement));
         };
         revealAllImgs();
-        document.addEventListener("astro:after-swap", revealAllImgs);
+        document.addEventListener("astro:after-swap", function () {
+            // 切页后等幽灵层退场（~700ms）再揭示，避免动画在隐藏期播完
+            window.setTimeout(revealAllImgs, 800);
+        });
     </script>
 </html>
