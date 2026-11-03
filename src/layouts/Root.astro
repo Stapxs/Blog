@@ -12,6 +12,7 @@ import "../styles/global.css";
 import "../components/pages/BlogIndex.module.css";
 import "../components/pages/BlogPostView.module.css";
 import "../components/pages/CategoryTagsView.module.css";
+import "../components/pages/EnvView.module.css";
 
 interface Props {
     title: string;
@@ -246,6 +247,15 @@ const { title, description, image = FallbackImage } = Astro.props;
                     document
                         .getElementById("search-panel")
                         ?.classList.remove("open");
+                });
+
+                // ".." = 返回上一页（history.back，等价浏览器后退）
+                document.addEventListener("click", function (e) {
+                    var back = e.target.closest("#history-back");
+                    if (!back) return;
+                    e.preventDefault();
+                    if (history.length > 1) history.back();
+                    else location.href = "/";
                 });
             })();
         </script>

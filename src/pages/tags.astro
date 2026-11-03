@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import CategoryTagsView from '../components/pages/CategoryTagsView';
 import Root from '../layouts/Root.astro';
 
-const posts = await getCollection('blog');
+const posts = (await getCollection('blog')).filter((p) => !p.data.hidden);
 const counts = new Map<string, number>();
 posts.forEach((p) =>
 	(p.data.tags ?? []).forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1)),

@@ -7,7 +7,9 @@ import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 import { formatDateLocal } from "../scripts/datetime";
 
 export async function getStaticPaths({ paginate }) {
-    const posts = (await getCollection("blog")).sort(
+    const posts = (await getCollection("blog"))
+        .filter((p) => !p.data.hidden)
+        .sort(
         (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
     );
     return paginate(posts, { pageSize: 7 });

@@ -16,6 +16,8 @@ const blog = defineCollection({
 			author: z.string().default('Stapxs'),
 			category: z.string().default('未分类'),
 			tags: z.array(z.string()).default([]),
+			// 隐藏文章（草稿等）：列表 / 归档 / 搜索 / RSS / 直链全部不可见
+			hidden: z.boolean().default(false),
 		}),
 });
 

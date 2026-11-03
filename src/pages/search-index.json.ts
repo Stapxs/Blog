@@ -6,7 +6,7 @@ import type { APIRoute } from 'astro';
  * 正文为原始 markdown，客户端做子串匹配（中文无需分词）。
  */
 export const GET: APIRoute = async () => {
-	const posts = await getCollection('blog');
+	const posts = (await getCollection('blog')).filter((p) => !p.data.hidden);
 	const index = posts.map((post) => ({
 		title: post.data.title,
 		author: post.data.author,

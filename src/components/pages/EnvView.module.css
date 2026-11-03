@@ -1,0 +1,33 @@
+/* env 输出块：与正文一致的"屏幕"底色 */
+.env {
+	margin-top: 1rem;
+	padding: 1.5em 1.5em 1em;
+	background: var(--surface);
+}
+
+.line {
+	display: flex;
+	column-gap: 0.6em;
+	padding: 0.15em 0;
+}
+
+.line:first-child {
+	padding-top: 0;
+}
+
+/* dotenv 高亮惯例：键名蓝、等号灰、值绿 */
+.key {
+	color: var(--blue);
+	flex: 0 0 auto;
+}
+
+.eq {
+	color: rgb(var(--gray));
+	flex: 0 0 auto;
+	opacity: 0.6;
+}
+
+.value {
+	color: var(--green);
+	overflow-wrap: anywhere;
+}

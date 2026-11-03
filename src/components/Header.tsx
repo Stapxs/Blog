@@ -16,13 +16,13 @@ export default function Header({ siteTitle, currentPath }: Props) {
 					<a href="/">/var/www/blog.stapxs.cn -&gt; ~/{siteTitle}</a>
 				</h2>
         <div className={styles.internalLinks} data-boot="nav">
-          <HeaderLink href="/">
+          <HeaderLink href="." disabled>
 						.
           </HeaderLink>
-          <HeaderLink href="/">
+          <HeaderLink href=".." id="history-back">
 						..
           </HeaderLink>
-          <HeaderLink href="/">
+          <HeaderLink href="/env">
 						.env
 					</HeaderLink>
 					<HeaderLink href="/" currentPath={currentPath}>
