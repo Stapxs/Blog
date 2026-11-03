@@ -303,7 +303,7 @@ const { title, description, image = FallbackImage } = Astro.props;
 
     {/* 首次加载 boot 序列 + 页面切换编排（模块脚本只执行一次） */}
     <script>
-        import { play } from "../scripts/scramble";
+        import { blankNode, play } from "../scripts/scramble";
 
         const html = document.documentElement;
         const MOTION_OK = () =>
@@ -365,26 +365,17 @@ const { title, description, image = FallbackImage } = Astro.props;
         const SWAP_KEYS = ["pagetitle", "cmd", "rest"] as const;
         const OVERLAY_KEYS = new Set(["pagetitle", "cmd"]);
         let prevMainHeight: number | null = null;
-        let isArticleExit = false;
 
         document.addEventListener("astro:before-swap", (event) => {
             if (!MOTION_OK()) return;
             const newDoc = (event as Event & { newDocument: Document })
                 .newDocument;
 
-            // 记录旧页面 main 高度，交换后做平滑形变；
-            // 同时判断旧页面是否为文章页（rest 里含 .content 样式类）——
-            // 只有从文章页退出才需要等退场动画播完再形变，其余页面立即形变
+            // 记录旧页面 main 高度，交换后做平滑形变
             const oldMain = document.querySelector(
                 '[data-boot="main"]',
             ) as HTMLElement | null;
             prevMainHeight = oldMain ? oldMain.offsetHeight : null;
-            isArticleExit = Array.from(
-                document.querySelectorAll('[data-boot="rest"]'),
-            ).some(
-                (el) =>
-                    (el as HTMLElement).className.indexOf("content") !== -1,
-            );
 
             SWAP_KEYS.forEach((key) => {
                 const olds = Array.from(
@@ -396,10 +387,17 @@ const { title, description, image = FallbackImage } = Astro.props;
                 news.forEach((nel, i) => {
                     const oel = olds[i] as HTMLElement | undefined;
                     const target = nel as HTMLElement;
-                    if (!oel) return;
 
-                    // 新内容入场时机未到，先藏住
+                    // 新内容入场时机未到：先藏住（无论有无旧元素配对 ——
+                    // 未配对的元素没有幽灵层覆盖，不藏会直接裸露闪现）
                     target.style.visibility = "hidden";
+                    // 防御性预空白：把文字铺成空白模板（原文存 WeakMap，
+                    // play() 会先恢复再解密）—— 之后任何渲染时序下
+                    // 都不可能闪现完整内容；非文字内容（背景/图片）
+                    // 由 reveal 的 opacity 淡入兜底
+                    blankNode(target);
+
+                    if (!oel) return; // 无旧元素可克隆，跳过幽灵层创建
 
                     // 幽灵宿主：包住 [real, ghost]，ghost absolute 覆盖在 real 未来位置上
                     // flow-root 阻断父子 margin 折叠 → real 的 margin 留在宿主内，
@@ -433,12 +431,12 @@ const { title, description, image = FallbackImage } = Astro.props;
 
             if (!MOTION_OK()) return;
 
-            // main 框架高度形变：交换时先测量自然高度并钉在旧高度
-            // （旧幽灵层正好装下，无需裁剪），等退场动画结束后（rest 入场时）
-            // 再平滑收缩到新高度 —— 避免收尾动画还没播完容器就变小导致的溢出。
-            // 注意：目标高度必须在钉住【之前】测量，否则 offsetHeight 读到的是
-            // 内联钉住的旧高度，形变会被 |to-from|<=2 短路成瞬间跳变。
-            let heightMorph: (() => void) | null = null;
+            // ========== 高度形变：交换后立即开始 ==========
+            // 内容自交换起就是新高度（real 隐藏但占位）→ 容器同步过渡、不慢一拍。
+            // overflow:hidden 保持到入场时解除：退场（~0.9s）比过渡（0.45s）长，
+            // 多出的时间正好用来裁剪溶解中的旧内容，不会外溢。
+            // 注意：目标高度必须在钉住之前测量，否则 offsetHeight 读到内联旧高度。
+            let heightSettle: (() => void) | null = null;
             const mainEl = document.querySelector(
                 '[data-boot="main"]',
             ) as HTMLElement | null;
@@ -447,37 +445,22 @@ const { title, description, image = FallbackImage } = Astro.props;
                 const to = mainEl.offsetHeight; // 钉住前测量自然高度
                 mainEl.style.height = `${from}px`;
                 if (Math.abs(to - from) > 2) {
-                    heightMorph = () => {
-                        mainEl.style.overflow = "hidden";
-                        mainEl.getBoundingClientRect(); // 强制回流，让起始高度生效
-                        mainEl.style.transition = "height 0.45s ease";
-                        mainEl.style.height = `${to}px`;
-                        let settled = false;
-                        const settle = () => {
-                            if (settled) return;
-                            settled = true;
-                            mainEl.style.height = "";
-                            mainEl.style.transition = "";
-                            mainEl.style.overflow = "";
-                        };
-                        mainEl.addEventListener(
-                            "transitionend",
-                            (ev) => {
-                                if (
-                                    ev.target === mainEl &&
-                                    ev.propertyName === "height"
-                                )
-                                    settle();
-                            },
-                            { once: true },
-                        );
-                        window.setTimeout(settle, 700);
-                    };
-                } else {
-                    // 高度几乎不变：入场时直接解除钉住即可
-                    heightMorph = () => {
+                    mainEl.style.overflow = "hidden";
+                    mainEl.getBoundingClientRect(); // 强制回流，让起始高度生效
+                    mainEl.style.transition = "height 0.45s ease";
+                    mainEl.style.height = `${to}px`;
+                    heightSettle = () => {
                         mainEl.style.height = "";
+                        mainEl.style.transition = "";
+                        mainEl.style.overflow = "";
                     };
+                    // 独立兜底：即使入场流程异常，1.2s 后也解除
+                    window.setTimeout(() => {
+                        heightSettle?.();
+                        heightSettle = null;
+                    }, 1200);
+                } else {
+                    mainEl.style.height = "";
                 }
             }
             prevMainHeight = null;
@@ -487,8 +470,15 @@ const { title, description, image = FallbackImage } = Astro.props;
             );
             if (hosts.length === 0) return;
 
+            // ========== 入场 ==========
+            // scramble 只操作文字节点；背景色/图片等非文字内容
+            // 用整体 opacity 淡入（否则幽灵层消失后会裸露闪现）
             const reveal = (real: HTMLElement) => {
                 real.style.visibility = "visible";
+                real.animate(
+                    [{ opacity: "0" }, { opacity: "1" }],
+                    { duration: 450, easing: "ease-out" },
+                );
                 play(real, {
                     duration: 900,
                     onDone: () => {
@@ -497,34 +487,34 @@ const { title, description, image = FallbackImage } = Astro.props;
                 });
             };
 
-            // real 统一用 [data-boot] 查找（不依赖幽灵层是否已移除）
             const restPairs: Array<{ host: HTMLElement; real: HTMLElement }> =
                 [];
 
-            // rest 幽灵层退场流程：
-            // 1) 先让背景色与图片淡出（200ms；scramble 不作用于此二者）
-            // 2) 淡出完成后再触发文字的反向解密离场
-            const exitGhost = function (ghost: HTMLElement, onTextGone: () => void) {
-                const imgs = Array.from(ghost.querySelectorAll("img"));
-                const EXIT_FADE = 200;
-                // 背景色淡出：先声明 transition 并强制回流，再改背景色才会产生过渡
+            // ========== 退场 ==========
+            // 两段式：背景色/图片淡出（scramble 管不到它们）→ 文字反向解密
+            const EXIT_FADE = 200;
+            const exitGhost = (ghost: HTMLElement) => {
+                // 背景色淡出（transition 需强制回流才能产生过渡）
                 ghost.style.transition = `background ${EXIT_FADE}ms ease-in`;
                 ghost.getBoundingClientRect();
                 ghost.style.background = "transparent";
-                imgs.forEach((im) => {
+                // 图片同步淡出
+                ghost.querySelectorAll("img").forEach((im) => {
                     (im as HTMLElement).animate(
                         [{ opacity: "1" }, { opacity: "0" }],
-                        { duration: EXIT_FADE, easing: "ease-in", fill: "forwards" },
+                        {
+                            duration: EXIT_FADE,
+                            easing: "ease-in",
+                            fill: "forwards",
+                        },
                     );
                 });
+                // 文字反向解密，完成后幽灵层自行移除
                 window.setTimeout(() => {
                     play(ghost, {
                         duration: 700,
                         reverse: true,
-                        onDone: () => {
-                            ghost.remove();
-                            onTextGone();
-                        },
+                        onDone: () => ghost.remove(),
                     });
                 }, EXIT_FADE);
             };
@@ -541,7 +531,7 @@ const { title, description, image = FallbackImage } = Astro.props;
                 if (!ghost || !real) return;
 
                 if (OVERLAY_KEYS.has(key)) {
-                    // 覆盖更新：新的在底下解密，旧的从上面溶出（demo 的 replay 模式）
+                    // 覆盖更新：新的在底下解密，旧的从上面溶出（replay 模式）
                     reveal(real);
                     play(ghost, {
                         duration: 600,
@@ -552,29 +542,50 @@ const { title, description, image = FallbackImage } = Astro.props;
                         },
                     });
                 } else {
-                    // 退场：背景/图片先走，文字再反向解密，全部完成后新内容入场
                     restPairs.push({ host, real });
-                    exitGhost(ghost, () => {});
+                    exitGhost(ghost);
                 }
             });
 
-            // 退场再入场：轮询等全部幽灵层移除后统一 reveal（引用提前捕获，不重复查询）
+            // ========== 退场完成 → 入场（所有页面统一「先退场后入场」） ==========
             let restRevealed = false;
-            const revealRest = () => {
+            const revealRest = (force = false) => {
                 if (restRevealed) return;
                 restRevealed = true;
                 restPairs.forEach(({ host, real }) => {
-                    host.querySelector("[data-ghost]")?.remove();
+                    const ghost = host.querySelector("[data-ghost]");
+                    if (ghost) {
+                        if (force) {
+                            // 超时强制：不清 DOM —— 快速淡出收尾，
+                            // 避免还在展示中的旧内容被瞬间拔掉导致闪现
+                            (ghost as HTMLElement).animate(
+                                [{ opacity: "1" }, { opacity: "0" }],
+                                { duration: 150, fill: "forwards" },
+                            );
+                            window.setTimeout(() => ghost.remove(), 160);
+                        } else {
+                            ghost.remove(); // 正常路径：退场已播完（全空白）
+                        }
+                    }
                     reveal(real);
                     host.replaceWith(real);
                 });
-                // 退场已完成，此刻开始容器高度形变
-                heightMorph?.();
-                heightMorph = null;
+                // 未配对的 rest 元素（旧页面没有对应项，如文章→列表的 pagination）：
+                // 没有幽灵层编排，但已被隐藏 —— 此刻统一入场
+                document
+                    .querySelectorAll<HTMLElement>(
+                        'main [data-boot="rest"][style*="visibility"]',
+                    )
+                    .forEach((el) => {
+                        if (el.style.visibility === "hidden") reveal(el);
+                    });
+                // 入场时解除高度形变的内联样式（此刻过渡早已完成，无跳变）
+                heightSettle?.();
+                heightSettle = null;
             };
-            if (restPairs.length > 0 && isArticleExit) {
-                // 文章页退出：等退场动画（背景/图片淡出 + 文字溶解）播完
-                // 再入场 + 高度形变
+            if (restPairs.length > 0) {
+                // 轮询等全部幽灵层自行移除（退场动画播完）后入场
+                // —— 试验：去掉 1.5s 超时强制，完全信任退场 onDone 的自移除
                 const poll = window.setInterval(() => {
                     if (
                         restPairs.every(
@@ -585,16 +596,11 @@ const { title, description, image = FallbackImage } = Astro.props;
                         revealRest();
                     }
                 }, 60);
-                window.setTimeout(() => {
-                    window.clearInterval(poll);
-                    revealRest();
-                }, 1500);
             } else {
-                // 非文章页切换：立即入场，高度形变马上开始（不等退场）
                 revealRest();
             }
 
-            // 安全兜底：无论如何 3s 后清理所有残留（含未触发的高度形变）
+            // ========== 3s 总兜底：清理所有残留 ==========
             window.setTimeout(() => {
                 document.querySelectorAll("[data-swap-host]").forEach((h) => {
                     h.querySelector("[data-ghost]")?.remove();
@@ -604,10 +610,8 @@ const { title, description, image = FallbackImage } = Astro.props;
                         h.replaceWith(r);
                     }
                 });
-                if (heightMorph) {
-                    heightMorph();
-                    heightMorph = null;
-                }
+                heightSettle?.();
+                heightSettle = null;
             }, 3000);
         });
 
