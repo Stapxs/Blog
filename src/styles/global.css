@@ -232,7 +232,7 @@ hr {
 .search-panel {
 	display: none;
 	position: fixed;
-	top: 8.5em;
+	top: 9em;
 	left: 50%;
 	transform: translateX(-50%);
 	width: calc(var(--content-width) / 2);
@@ -281,28 +281,6 @@ hr {
 .search-input::placeholder {
 	color: rgb(var(--gray));
 	opacity: 0.7;
-}
-
-/* 打字机 placeholder：JS 逐字写入，光标由 steps 动画提供 */
-.search-input[data-typing]::placeholder {
-	color: transparent; /* 逐字写入期间隐藏原生占位符 */
-}
-
-.search-input[data-cursor]::after {
-	content: "";
-	display: inline-block;
-	width: 1ch;
-	height: 1em;
-	margin-left: 1px;
-	background: rgb(var(--gray));
-	vertical-align: -0.15em;
-	animation: caret-blink 0.9s steps(1) infinite;
-}
-
-@keyframes caret-blink {
-	50% {
-		opacity: 0;
-	}
 }
 
 @keyframes search-panel-in {

@@ -181,6 +181,23 @@ const { title, description, image = FallbackImage } = Astro.props;
 
             // Search panel toggle（document 级委托，换页后依然有效；面板每次重新查询）
             (function () {
+                // 打字机 placeholder：每次面板打开时逐字打出「输入关键词…」
+                var PLACEHOLDER = "输入关键词…";
+                var typingTimer = null;
+                var typePlaceholder = function (input) {
+                    window.clearTimeout(typingTimer);
+                    var i = 0;
+                    input.setAttribute("placeholder", "");
+                    var tick = function () {
+                        if (i <= PLACEHOLDER.length) {
+                            input.setAttribute("placeholder", PLACEHOLDER.slice(0, i));
+                            i++;
+                            typingTimer = window.setTimeout(tick, 90);
+                        }
+                    };
+                    typingTimer = window.setTimeout(tick, 250);
+                };
+
                 document.addEventListener("click", function (e) {
                     var panel = document.getElementById("search-panel");
                     if (!panel) return;
@@ -189,12 +206,18 @@ const { title, description, image = FallbackImage } = Astro.props;
                         var opened = panel.classList.toggle("open");
                         if (opened) {
                             var input = panel.querySelector("input");
-                            if (input) input.focus();
+                            if (input) {
+                                input.focus();
+                                if (!input.value) typePlaceholder(input);
+                            }
                         }
                         return;
                     }
                     if (!e.target.closest("#search-panel")) {
                         panel.classList.remove("open");
+                        window.clearTimeout(typingTimer);
+                        var inp = panel.querySelector("input");
+                        inp?.setAttribute("placeholder", PLACEHOLDER);
                     }
                 });
                 document.addEventListener("keydown", function (e) {
@@ -270,6 +293,7 @@ const { title, description, image = FallbackImage } = Astro.props;
                     class="search-input"
                     type="text"
                     placeholder="输入关键词…"
+                    autocomplete="off"
                 />
             </div>
         </div>
