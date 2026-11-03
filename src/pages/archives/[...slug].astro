@@ -1,8 +1,8 @@
 ---
-import { getImage } from 'astro:assets';
 import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BlogPostView from '../../components/pages/BlogPostView';
 import Root from '../../layouts/Root.astro';
+import { formatDateLocal } from '../../scripts/datetime';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
@@ -17,19 +17,21 @@ type Props = CollectionEntry<'blog'>;
 const post = Astro.props;
 const { Content } = await render(post);
 
-const hero = post.data.heroImage
-	? await getImage({ src: post.data.heroImage, width: 1020, height: 510 })
-	: undefined;
+// 字数统计：CJK 按字计数，英文/数字按词计数
+const body = post.body ?? '';
+const wordCount =
+	(body.match(/[\u4e00-\u9fff]/g) ?? []).length +
+	(body.match(/[a-zA-Z0-9]+(?:['’-][a-zA-Z0-9]+)*/g) ?? []).length;
 ---
 
 <Root title={post.data.title} description={post.data.description}>
 	<BlogPostView
+		location="Archives"
 		title={post.data.title}
-		pubDate={post.data.pubDate.toISOString()}
-		updatedDate={post.data.updatedDate?.toISOString()}
-		heroUrl={hero?.src}
-		heroWidth={hero?.width}
-		heroHeight={hero?.height}
+		author={post.data.author}
+		pubDate={formatDateLocal(post.data.pubDate)}
+		updatedDate={post.data.updatedDate ? formatDateLocal(post.data.updatedDate) : undefined}
+		wordCount={wordCount}
 	>
 		<Content />
 	</BlogPostView>

@@ -1,17 +1,14 @@
 ---
-import { getImage } from 'astro:assets';
-import AboutHeroImage from '../assets/blog-placeholder-about.jpg';
 import BlogPostView from '../components/pages/BlogPostView';
 import Root from '../layouts/Root.astro';
-
-const hero = await getImage({ src: AboutHeroImage, width: 1020, height: 510 });
+import { formatDateLocal } from '../scripts/datetime';
 ---
 
 <Root title="About Me" description="Lorem ipsum dolor sit amet">
 	<BlogPostView
+		location="About"
 		title="About Me"
-		pubDate={new Date('August 08 2021').toISOString()}
-		heroUrl={hero.src}
+		pubDate={formatDateLocal(new Date('August 08 2021'))}
 	>
 		<p>
 			Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut

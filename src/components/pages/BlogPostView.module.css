@@ -1,44 +1,40 @@
-.main {
-	width: calc(100% - 2em);
-	max-width: 100%;
-	margin: 0;
-}
-
-.heroImage {
-	width: 100%;
-}
-
-.heroImage img {
-	display: block;
-	margin: 0 auto;
-	border-radius: 12px;
-	box-shadow: var(--box-shadow);
-}
-
 .prose {
-	width: var(--content-width);
-	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 1em;
 	color: rgb(var(--gray-dark));
 }
 
 .titleBlock {
 	margin-bottom: 1em;
-	padding: 1em 0;
-	text-align: center;
 	line-height: 1;
 }
 
-.titleBlock h1 {
+.titleBlock h2 {
 	margin: 0 0 0.5em 0;
 }
 
-.date {
-	margin-bottom: 0.5em;
+.titleBlock hr {
+	margin: 1em 0 0;
+}
+
+.meta {
 	color: rgb(var(--gray));
 }
 
-.lastUpdatedOn {
-	font-style: italic;
+.author {
+	color: var(--purple);
+}
+
+.sep {
+	margin: 0 0.6em;
+	opacity: 0.6;
+}
+
+/* 正文内容区（含大标题与信息行），嵌一块"屏幕"背景 */
+.content {
+	padding: 1.5em 1.5em 1em;
+	margin-top: 1.5em;
+	background: var(--surface);
+}
+
+.content > :last-child {
+	margin-bottom: 0;
 }

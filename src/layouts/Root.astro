@@ -1,42 +1,629 @@
 ---
-import { Font } from 'astro:assets';
-import { ClientRouter } from 'astro:transitions';
-import type { ImageMetadata } from 'astro';
-import BaseHead from '../components/BaseHead';
-import Footer from '../components/Footer';
-import Header from '../components/Header';
-import FallbackImage from '../assets/blog-placeholder-1.jpg';
-import { SITE_TITLE } from '../consts';
-import '../styles/global.css';
+import { Font } from "astro:assets";
+import { ClientRouter } from "astro:transitions";
+import type { ImageMetadata } from "astro";
+import BaseHead from "../components/BaseHead";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import FallbackImage from "../assets/blog-placeholder-1.png";
+import { SITE_TITLE } from "../consts";
+import "../styles/global.css";
+/* 切页幽灵层会把旧页面的元素带进新页面，因此两组页面级样式需要全站常驻 */
+import "../components/pages/BlogIndex.module.css";
+import "../components/pages/BlogPostView.module.css";
 
 interface Props {
-	title: string;
-	description: string;
-	image?: ImageMetadata;
+    title: string;
+    description: string;
+    image?: ImageMetadata;
 }
 
 const { title, description, image = FallbackImage } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead
-			title={title}
-			description={description}
-			image={image.src}
-			site={Astro.site?.href ?? Astro.url.origin}
-			pathname={Astro.url.pathname}
-			pageUrl={Astro.url.href}
-			generator={Astro.generator}
-		/>
-		<Font cssVariable="--font-pixel" preload />
-		<!-- SPA-style navigation: swaps pages without a full reload -->
-		<ClientRouter />
-	</head>
-	<body>
-		<Header siteTitle={SITE_TITLE} currentPath={Astro.url.pathname} />
-		<slot />
-		<Footer />
-	</body>
+<html lang="en" data-theme="dark">
+    <head>
+        <BaseHead
+            title={title}
+            description={description}
+            image={image.src}
+            site={Astro.site?.href ?? Astro.url.origin}
+            pathname={Astro.url.pathname}
+            pageUrl={Astro.url.href}
+            generator={Astro.generator}
+        />
+        <script is:inline>
+            (function () {
+                // 首次加载标记 boot 序列（在首屏渲染前隐藏分级元素）
+                if (
+                    !window.__bootPlayed &&
+                    !window.matchMedia("(prefers-reduced-motion: reduce)")
+                        .matches
+                ) {
+                    window.__bootPlayed = true;
+                    document.documentElement.classList.add("boot");
+                }
+
+                // Apply the saved theme before first paint; re-apply after ClientRouter swaps.
+                (function () {
+                    var apply = function () {
+                        document.documentElement.dataset.theme =
+                            localStorage.getItem("theme") || "dark";
+                    };
+                    apply();
+                    document.addEventListener("astro:after-swap", apply);
+
+                    // Theme toggle with a ripple (View Transitions + clip-path circle).
+                    document.addEventListener("click", function (e) {
+                        var btn = e.target.closest("#theme-toggle");
+                        if (!btn) return;
+                        var root = document.documentElement;
+                        var next =
+                            root.dataset.theme === "light" ? "dark" : "light";
+                        var applyTheme = function () {
+                            root.dataset.theme = next;
+                            localStorage.setItem("theme", next);
+                        };
+
+                        var reduceMotion = window.matchMedia(
+                            "(prefers-reduced-motion: reduce)",
+                        ).matches;
+                        if (!document.startViewTransition || reduceMotion) {
+                            applyTheme();
+                            return;
+                        }
+
+                        var x = e.clientX;
+                        var y = e.clientY;
+                        var endRadius = Math.hypot(
+                            Math.max(x, window.innerWidth - x),
+                            Math.max(y, window.innerHeight - y),
+                        );
+
+                        // 像素圆（光栅化）：按圆方程逐列/行求边界格数
+                        // floor(√(n²-k²))，轮廓全是横平竖直的台阶。
+                        // 按四个象限弧走（顶→右→底→左），连接处为单格台阶、无斜边
+                        var PIXEL_GRID = 150;
+                        var pixelCirclePoints = function (cx, cy, r, grid) {
+                            var n = Math.ceil(r / grid);
+                            var t = function (k) {
+                                return Math.floor(
+                                    Math.sqrt(Math.max(0, n * n - k * k)),
+                                );
+                            };
+                            var pts = [];
+                            var push = function (gx, gy) {
+                                pts.push([
+                                    (cx + gx * grid).toFixed(1),
+                                    (cy + gy * grid).toFixed(1),
+                                ]);
+                            };
+                            // 右上：顶点 (0,-n) → 右点 (n+1,0)
+                            for (var gx = 0; gx <= n; gx++) {
+                                push(gx, -t(gx));
+                                push(gx + 1, -t(gx));
+                            }
+                            // 右下：右点 (n,0) → 底点 (0,n+1)
+                            for (var gy = 0; gy <= n; gy++) {
+                                push(t(gy), gy);
+                                push(t(gy), gy + 1);
+                            }
+                            // 左下：底点 (0,n) → 左点 (-n-1,0)
+                            for (var lx = 0; lx >= -n; lx--) {
+                                push(lx, t(lx));
+                                push(lx - 1, t(lx));
+                            }
+                            // 左上：左点 (-n,0) → 顶点 (0,-n-1)
+                            for (var ly = 0; ly >= -n; ly--) {
+                                push(-t(ly), ly);
+                                push(-t(ly), ly - 1);
+                            }
+                            return pts;
+                        };
+                        var toPolygon = function (pts) {
+                            return (
+                                "polygon(" +
+                                pts
+                                    .map(function (p) {
+                                        return p[0] + "px " + p[1] + "px";
+                                    })
+                                    .join(",") +
+                                ")"
+                            );
+                        };
+                        var endPts = pixelCirclePoints(
+                            x,
+                            y,
+                            endRadius + PIXEL_GRID,
+                            PIXEL_GRID,
+                        );
+                        // 起点：同顶点数全部收缩在圆心 → 插值过程即像素圆等比放大
+                        var startPts = endPts.map(function () {
+                            return [x.toFixed(1), y.toFixed(1)];
+                        });
+
+                        // Suppress the default cross-fade only for this transition,
+                        // so ClientRouter's page-navigation fade stays untouched.
+                        root.classList.add("theme-rippling");
+                        var transition =
+                            document.startViewTransition(applyTheme);
+
+                        transition.ready
+                            .then(function () {
+                                document.documentElement.animate(
+                                    {
+                                        clipPath: [
+                                            toPolygon(startPts),
+                                            toPolygon(endPts),
+                                        ],
+                                    },
+                                    {
+                                        duration: 600,
+                                        easing: "ease-in",
+                                        pseudoElement:
+                                            "::view-transition-new(root)",
+                                    },
+                                );
+                            })
+                            .catch(function () {});
+
+                        transition.finished
+                            .finally(function () {
+                                root.classList.remove("theme-rippling");
+                            })
+                            .catch(function () {});
+                    });
+                })();
+            })();
+
+            // Search panel toggle（document 级委托，换页后依然有效；面板每次重新查询）
+            (function () {
+                document.addEventListener("click", function (e) {
+                    var panel = document.getElementById("search-panel");
+                    if (!panel) return;
+                    var btn = e.target.closest("#search-toggle");
+                    if (btn) {
+                        var opened = panel.classList.toggle("open");
+                        if (opened) {
+                            var input = panel.querySelector("input");
+                            if (input) input.focus();
+                        }
+                        return;
+                    }
+                    if (!e.target.closest("#search-panel")) {
+                        panel.classList.remove("open");
+                    }
+                });
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape") {
+                        var panel = document.getElementById("search-panel");
+                        panel?.classList.remove("open");
+                    }
+                });
+                document.addEventListener("astro:after-swap", function () {
+                    document
+                        .getElementById("search-panel")
+                        ?.classList.remove("open");
+                });
+
+                // 输入即预热索引 + 回车通过 ClientRouter 跳转搜索页
+                document.addEventListener("input", function (e) {
+                    var input = e.target.closest
+                        ? e.target.closest("#search-panel input")
+                        : null;
+                    if (input && !window.__searchIndex) {
+                        window.__searchIndex = fetch("/search-index.json").then(
+                            function (r) {
+                                return r.json();
+                            },
+                        );
+                    }
+                });
+                document.addEventListener("keydown", function (e) {
+                    if (e.key !== "Enter") return;
+                    var input = e.target.closest
+                        ? e.target.closest("#search-panel input")
+                        : null;
+                    if (!input) return;
+                    var q = input.value.trim();
+                    if (!q) return;
+                    var a = document.createElement("a");
+                    a.href = "/search?q=" + encodeURIComponent(q);
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    document
+                        .getElementById("search-panel")
+                        ?.classList.remove("open");
+                });
+            })();
+        </script>
+        <Font cssVariable="--font-pixel" preload />
+        {/* 无刷新导航；页面切换动画由下方幽灵层编排接管，关闭 ClientRouter 自带过渡 */}
+        <ClientRouter fallback="swap" />
+    </head>
+    <body>
+        <Header siteTitle={SITE_TITLE} currentPath={Astro.url.pathname} />
+        {/* 搜索面板：无遮罩、宽度为正文一半、标题压上边框居中 */}
+        <div class="search-panel" id="search-panel" role="dialog" aria-label="搜索">
+            <span class="search-title">搜索</span>
+            <div class="search-row">
+                <span class="cmd-prompt">&gt;</span>
+                <input class="search-input" type="text" placeholder="输入关键词…" />
+            </div>
+        </div>
+        <slot />
+        <Footer />
+    </body>
+
+    {/* 首次加载 boot 序列 + 页面切换编排（模块脚本只执行一次） */}
+    <script>
+        import { play } from "../scripts/scramble";
+
+        const html = document.documentElement;
+        const MOTION_OK = () =>
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        /* ================= 首次加载 boot 序列 ================= */
+        if (html.classList.contains("boot")) {
+            const show = (el: Element | null) => el?.classList.add("boot-in");
+            const one = (s: string) => document.querySelector(s);
+            const all = (s: string) => Array.from(document.querySelectorAll(s));
+
+            /* P1（t=0）：标题 chip + 导航链接 —— 打字机 */
+            const title = one('[data-boot="title"]');
+            if (title) play(title as HTMLElement, { duration: 900 });
+            show(title);
+
+            const nav = one('[data-boot="nav"]');
+            all('[data-boot="nav"] a').forEach((a, i) => {
+                play(a as HTMLElement, { duration: 600, delay: 300 + i * 250 });
+            });
+            show(nav);
+
+            /* P2（t≈1.5s）：main 框架（内容仍隐藏）+ 右上角图标 —— 淡入 */
+            window.setTimeout(() => {
+                show(one('[data-boot="main"]'));
+                show(one('[data-boot="icons"]'));
+            }, 1500);
+
+            /* P3（t≈2.3s）：位置标题 + 命令行 —— 打字机 */
+            window.setTimeout(() => {
+                const pageTitle = one('[data-boot="pagetitle"]');
+                if (pageTitle)
+                    play(pageTitle as HTMLElement, { duration: 800 });
+                show(pageTitle);
+
+                const cmd = one('[data-boot="cmd"]');
+                if (cmd)
+                    play(cmd as HTMLElement, { duration: 700, delay: 300 });
+                show(cmd);
+            }, 2300);
+
+            /* P4（t≈3.4s）：列表 / 正文 —— 打字机 */
+            window.setTimeout(() => {
+                all('[data-boot="rest"]').forEach((el, i) => {
+                    play(el as HTMLElement, { duration: 1300, delay: i * 200 });
+                    show(el);
+                });
+            }, 3400);
+
+            /* 收尾：解除 boot 态；若中途发生页面切换则立即解除 */
+            window.setTimeout(() => html.classList.remove("boot"), 5300);
+        }
+
+        /* ================= 页面切换编排 =================
+         * 顶栏 / main 框架在所有页面渲染一致 → 硬交换视觉上不动。
+         * pagetitle / cmd：旧内容克隆为幽灵层悬浮在新位置上，
+         *   交换后同时「旧溶出 + 新解密」（覆盖更新，demo 的 replay 模式）。
+         * rest：先等旧内容溶出完成，再解密入场（退场再入场）。 */
+        const SWAP_KEYS = ["pagetitle", "cmd", "rest"] as const;
+        const OVERLAY_KEYS = new Set(["pagetitle", "cmd"]);
+        let prevMainHeight: number | null = null;
+
+        document.addEventListener("astro:before-swap", (event) => {
+            if (!MOTION_OK()) return;
+            const newDoc = (event as Event & { newDocument: Document })
+                .newDocument;
+
+            // 记录旧页面 main 高度，交换后做平滑形变
+            const oldMain = document.querySelector(
+                '[data-boot="main"]',
+            ) as HTMLElement | null;
+            prevMainHeight = oldMain ? oldMain.offsetHeight : null;
+
+            SWAP_KEYS.forEach((key) => {
+                const olds = Array.from(
+                    document.querySelectorAll(`[data-boot="${key}"]`),
+                );
+                const news = Array.from(
+                    newDoc.querySelectorAll(`[data-boot="${key}"]`),
+                );
+                news.forEach((nel, i) => {
+                    const oel = olds[i] as HTMLElement | undefined;
+                    const target = nel as HTMLElement;
+                    if (!oel) return;
+
+                    // 新内容入场时机未到，先藏住
+                    target.style.visibility = "hidden";
+
+                    // 幽灵宿主：包住 [ghost, real]，ghost absolute 覆盖在 real 未来位置上
+                    const host = newDoc.createElement("div");
+                    host.dataset.swapHost = key;
+                    host.style.position = "relative";
+                    const ghost = oel.cloneNode(true) as HTMLElement;
+                    ghost.removeAttribute("data-boot");
+                    ghost.removeAttribute("id");
+                    ghost.dataset.ghost = key;
+                    ghost.style.position = "absolute";
+                    ghost.style.top = "0";
+                    ghost.style.left = "0";
+                    ghost.style.width = "100%";
+                    ghost.style.margin = "0";
+                    ghost.style.pointerEvents = "none";
+                    ghost.style.visibility = "visible";
+                    ghost.style.opacity = "1";
+
+                    target.replaceWith(host);
+                    host.append(target, ghost);
+                });
+            });
+        });
+
+        document.addEventListener("astro:after-swap", () => {
+            // boot 若在进行中，立即解除（切页优先）
+            html.classList.remove("boot");
+
+            if (!MOTION_OK()) return;
+
+            // main 框架高度形变：从旧页面高度平滑过渡到新页面高度
+            const mainEl = document.querySelector(
+                '[data-boot="main"]',
+            ) as HTMLElement | null;
+            if (mainEl && prevMainHeight !== null) {
+                const from = prevMainHeight;
+                const to = mainEl.offsetHeight;
+                if (Math.abs(to - from) > 2) {
+                    mainEl.style.height = `${from}px`;
+                    mainEl.style.overflow = "hidden";
+                    mainEl.getBoundingClientRect(); // 强制回流，让起始高度生效
+                    mainEl.style.transition = "height 0.45s ease";
+                    mainEl.style.height = `${to}px`;
+                    let settled = false;
+                    const settle = () => {
+                        if (settled) return;
+                        settled = true;
+                        mainEl.style.height = "";
+                        mainEl.style.transition = "";
+                        mainEl.style.overflow = "";
+                    };
+                    mainEl.addEventListener(
+                        "transitionend",
+                        (ev) => {
+                            if (
+                                ev.target === mainEl &&
+                                ev.propertyName === "height"
+                            )
+                                settle();
+                        },
+                        { once: true },
+                    );
+                    window.setTimeout(settle, 700);
+                }
+            }
+            prevMainHeight = null;
+
+            const hosts = Array.from(
+                document.querySelectorAll("[data-swap-host]"),
+            );
+            if (hosts.length === 0) return;
+
+            const reveal = (real: HTMLElement) => {
+                real.style.visibility = "visible";
+                play(real, {
+                    duration: 900,
+                    onDone: () => {
+                        real.style.visibility = "";
+                    },
+                });
+            };
+
+            // real 统一用 [data-boot] 查找（不依赖幽灵层是否已移除）
+            const restPairs: Array<{ host: HTMLElement; real: HTMLElement }> =
+                [];
+
+            hosts.forEach((hostEl) => {
+                const host = hostEl as HTMLElement;
+                const key = host.dataset.swapHost as string;
+                const ghost = host.querySelector(
+                    "[data-ghost]",
+                ) as HTMLElement | null;
+                const real = host.querySelector(
+                    "[data-boot]",
+                ) as HTMLElement | null;
+                if (!ghost || !real) return;
+
+                if (OVERLAY_KEYS.has(key)) {
+                    // 覆盖更新：新的在底下解密，旧的从上面溶出（demo 的 replay 模式）
+                    reveal(real);
+                    play(ghost, {
+                        duration: 600,
+                        reverse: true,
+                        onDone: () => {
+                            ghost.remove();
+                            host.replaceWith(real);
+                        },
+                    });
+                } else {
+                    // 退场：所有 rest 幽灵层先溶完，新内容才统一入场
+                    restPairs.push({ host, real });
+                    play(ghost, {
+                        duration: 700,
+                        reverse: true,
+                        onDone: () => ghost.remove(),
+                    });
+                }
+            });
+
+            // 退场再入场：轮询等全部幽灵层移除后统一 reveal（引用提前捕获，不重复查询）
+            let restRevealed = false;
+            const revealRest = () => {
+                if (restRevealed) return;
+                restRevealed = true;
+                restPairs.forEach(({ host, real }) => {
+                    host.querySelector("[data-ghost]")?.remove();
+                    reveal(real);
+                    host.replaceWith(real);
+                });
+            };
+            if (restPairs.length > 0) {
+                const poll = window.setInterval(() => {
+                    if (
+                        restPairs.every(
+                            ({ host }) => !host.querySelector("[data-ghost]"),
+                        )
+                    ) {
+                        window.clearInterval(poll);
+                        revealRest();
+                    }
+                }, 60);
+                window.setTimeout(() => {
+                    window.clearInterval(poll);
+                    revealRest();
+                }, 1500);
+            }
+
+            // 安全兜底：无论如何 3s 后清理所有残留
+            window.setTimeout(() => {
+                document.querySelectorAll("[data-swap-host]").forEach((h) => {
+                    h.querySelector("[data-ghost]")?.remove();
+                    const r = h.querySelector("[data-boot]");
+                    if (r) {
+                        (r as HTMLElement).style.visibility = "";
+                        h.replaceWith(r);
+                    }
+                });
+            }, 3000);
+        });
+
+        /* ================= 列表 hover 跟随指示条 =================
+         * 高亮条挂在列表容器里，mouseover 时测量目标行位置，
+         * 用 transform 过渡滑过去 —— 跨行连续动画。 */
+        const moveHoverBar = function (list: HTMLElement, row: HTMLElement) {
+            const bar = list.querySelector<HTMLElement>("[data-hover-bar]");
+            if (!bar) return;
+            const listRect = list.getBoundingClientRect();
+            const rowRect = row.getBoundingClientRect();
+            bar.style.height = `${rowRect.height}px`;
+            bar.style.transform = `translateY(${rowRect.top - listRect.top}px)`;
+            bar.style.opacity = "1";
+        };
+
+        const hideHoverBar = function (list: HTMLElement) {
+            const bar = list.querySelector<HTMLElement>("[data-hover-bar]");
+            if (!bar) return;
+            bar.style.opacity = "0";
+        };
+
+        document.addEventListener("mouseover", (e) => {
+            const row = (e.target as HTMLElement).closest<HTMLElement>(
+                "a[data-boot-list-row], [data-hover-list] a",
+            );
+            const list = row?.closest<HTMLElement>("[data-hover-list]");
+            if (row && list) {
+                moveHoverBar(list, row);
+            } else {
+                document
+                    .querySelectorAll<HTMLElement>("[data-hover-list]")
+                    .forEach(hideHoverBar);
+            }
+        });
+
+        document.addEventListener(
+            "mouseleave",
+            () => {
+                document
+                    .querySelectorAll<HTMLElement>("[data-hover-list]")
+                    .forEach(hideHoverBar);
+            },
+            true,
+        );
+
+        /* ================= 图片对角线像素揭示 =================
+         * 图片加载完成后，一条阶梯状对角线（量化到像素网格）
+         * 从左上扫向右下，扫过之处图像显现 —— 与文字解密同方向。
+         * 多边形每帧固定顶点数（角点以重复点占位），相邻帧可平滑插值。 */
+        const IMG_STEP = 24;
+        const clampN = (v: number, max: number) =>
+            Math.max(0, Math.min(v, max));
+
+        const diagPolygon = function (w: number, h: number, d: number): string {
+            // 揭示边界端点：A 在上/右边缘，B 在左/下边缘
+            const ax = d <= w ? d : w;
+            const ay = d <= w ? 0 : clampN(d - w, h);
+            const bx = d <= h ? 0 : clampN(d - h, w);
+            const by = d <= h ? d : h;
+            const pt = (x: number, y: number) =>
+                `${x.toFixed(1)}px ${y.toFixed(1)}px`;
+            const pts: string[] = [pt(0, 0)];
+            // 角点占位（未越过时与端点重合，保持顶点数恒定）
+            pts.push(pt(d > w ? w : ax, d > w ? 0 : ay));
+            pts.push(pt(ax, ay));
+            // A → B 的阶梯（量化到 IMG_STEP 网格）
+            const STEPS = 10;
+            for (let i = 1; i < STEPS; i++) {
+                const t = i / STEPS;
+                let px = Math.round((ax + (bx - ax) * t) / IMG_STEP) * IMG_STEP;
+                let py = Math.round((ay + (by - ay) * t) / IMG_STEP) * IMG_STEP;
+                px = clampN(px, w);
+                py = clampN(py, h);
+                pts.push(pt(px, py));
+            }
+            pts.push(pt(bx, by));
+            pts.push(pt(d > h ? 0 : bx, d > h ? h : by));
+            return `polygon(${pts.join(",")})`;
+        };
+
+        const revealImg = function (img: HTMLImageElement) {
+            if (img.dataset.imgReveal) return;
+            img.dataset.imgReveal = "1";
+            const run = function () {
+                if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+                    return;
+                const w = img.clientWidth || 100;
+                const h = img.clientHeight || 100;
+                img.style.clipPath = diagPolygon(w, h, 0); // 先藏住，防闪全图
+                const N = 24;
+                const frames: Array<{ clipPath: string; offset: number }> = [];
+                for (let i = 0; i <= N; i++) {
+                    frames.push({
+                        clipPath: diagPolygon(w, h, (w + h) * (i / N)),
+                        offset: i / N,
+                    });
+                }
+                const anim = img.animate(frames, {
+                    duration: 550,
+                    easing: "ease-out",
+                });
+                anim.onfinish = () => {
+                    img.style.clipPath = "";
+                };
+            };
+            // boot 序列未结束时推迟（等正文显示后再揭示）
+            if (document.documentElement.classList.contains("boot")) {
+                window.setTimeout(run, 5500);
+            } else {
+                run();
+            }
+        };
+
+        const revealAllImgs = function () {
+            document
+                .querySelectorAll<HTMLElement>("main img")
+                .forEach((el) => revealImg(el as HTMLImageElement));
+        };
+        revealAllImgs();
+        document.addEventListener("astro:after-swap", revealAllImgs);
+    </script>
 </html>

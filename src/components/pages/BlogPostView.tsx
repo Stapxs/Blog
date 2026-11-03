@@ -1,49 +1,64 @@
 import type { ReactNode } from 'react';
-import FormattedDate from '../FormattedDate';
+import PageTitle from '../PageTitle';
 import styles from './BlogPostView.module.css';
 
 interface Props {
+	/** Big location heading shown at the top of the prose column (e.g. "About"). */
+	location?: string;
 	title: string;
-	/** ISO date string. */
+	author?: string;
+	/** 本地格式化日期 YYYY-MM-DD（由路由层 format 好）。 */
 	pubDate: string;
-	/** ISO date string. */
+	/** 本地格式化日期 YYYY-MM-DD。 */
 	updatedDate?: string;
-	/** Optimized hero image URL (already passed through `getImage`). */
-	heroUrl?: string;
-	heroWidth?: number;
-	heroHeight?: number;
+	/** Body word count (CJK chars + latin words), computed by the route. */
+	wordCount?: number;
 	children: ReactNode;
 }
 
 export default function BlogPostView({
+	location,
 	title,
+	author,
 	pubDate,
 	updatedDate,
-	heroUrl,
-	heroWidth = 1020,
-	heroHeight = 510,
+	wordCount,
 	children,
 }: Props) {
 	return (
-		<main className={styles.main}>
+		<main data-boot="main">
 			<article>
-				<div className={styles.heroImage}>
-					{heroUrl && <img src={heroUrl} width={heroWidth} height={heroHeight} alt="" />}
-				</div>
 				<div className={styles.prose}>
-					<div className={styles.titleBlock}>
-						<div className={styles.date}>
-							<FormattedDate date={pubDate} />
-							{updatedDate && (
-								<div className={styles.lastUpdatedOn}>
-									Last updated on <FormattedDate date={updatedDate} />
-								</div>
-							)}
-						</div>
-						<h1>{title}</h1>
-						<hr />
+					{location && <PageTitle>{location}</PageTitle>}
+					<div data-boot="cmd">
+						<span className="cmd-prompt">&gt;</span> <span className="cmd-name">mdcat</span>{' '}
+						<span className="cmd-arg">{title}.md</span>
 					</div>
-					{children}
+					<div className={styles.content} data-boot="rest">
+						<div className={styles.titleBlock}>
+							<h2>{title}</h2>
+							<div className={styles.meta}>
+								{author && (
+									<>
+										<span className={styles.author}>{author}</span>
+										<span className={styles.sep}>|</span>
+									</>
+								)}
+								<span>
+									{pubDate}
+									{updatedDate && ` (编辑于 ${updatedDate})`}
+								</span>
+								{typeof wordCount === 'number' && (
+									<>
+										<span className={styles.sep}>|</span>
+										<span>{wordCount} 字</span>
+									</>
+								)}
+							</div>
+							<hr />
+						</div>
+						{children}
+					</div>
 				</div>
 			</article>
 		</main>

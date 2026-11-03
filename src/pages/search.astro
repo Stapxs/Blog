@@ -1,0 +1,120 @@
+---
+import Root from '../layouts/Root.astro';
+import SearchView from '../components/pages/SearchView';
+---
+
+<Root title="Search" description="搜索">
+	<SearchView />
+</Root>
+
+{/* data-astro-rerun：每次导航到本页都重新执行搜索渲染
+    注意：rerun 脚本不会被编译，必须使用纯 JS（无 TS 语法） */}
+<script data-astro-rerun>
+	(() => {
+		var params = new URLSearchParams(window.location.search);
+		var q = (params.get('q') || '').trim();
+		var page = Math.max(1, parseInt(params.get('p') || '1', 10) || 1);
+		var PAGE_SIZE = 5;
+
+		// 命令行参数显示
+		var qArg = document.querySelector('[data-search-q]');
+		var pArg = document.querySelector('[data-search-p]');
+		if (qArg) qArg.textContent = q || '""';
+		if (pArg) pArg.textContent = String(page);
+
+		var list = document.querySelector('[data-search-list]');
+		var template = list ? list.querySelector('[data-search-template]') : null;
+		var pagination = document.querySelector('[data-search-pagination]');
+		if (!list || !template || !pagination) return;
+
+		// 本地日期 YYYY-MM-DD
+		function fmtDate(iso) {
+			var d = new Date(iso);
+			var m = String(d.getMonth() + 1).padStart(2, '0');
+			var day = String(d.getDate()).padStart(2, '0');
+			return d.getFullYear() + '-' + m + '-' + day;
+		}
+
+		// 索引缓存挂在 window 上（与搜索面板的预热共用）
+		if (!window.__searchIndex) {
+			window.__searchIndex = fetch('/search-index.json').then(function (r) {
+				return r.json();
+			});
+		}
+
+		window.__searchIndex.then(function (index) {
+			// 空格分隔多关键词 = 全部命中（AND）；中文子串直接匹配
+			var terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+			var hits = terms.length
+				? index.filter(function (p) {
+						var title = String(p.title).toLowerCase();
+						return terms.every(function (t) {
+							return (
+								title.indexOf(t) !== -1 ||
+								String(p.category).toLowerCase().indexOf(t) !== -1 ||
+								String(p.content).indexOf(t) !== -1
+							);
+						});
+					})
+				: [];
+
+			var last = Math.max(1, Math.ceil(hits.length / PAGE_SIZE));
+			var current = Math.min(page, last);
+			var slice = hits.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+
+			// 清掉旧结果行（保留 hoverBar 与模板）
+			list
+				.querySelectorAll(':scope > li:not([data-hover-bar]):not([data-search-template])')
+				.forEach(function (li) {
+					li.remove();
+				});
+
+			if (slice.length === 0) {
+				var li = document.createElement('li');
+				li.textContent = terms.length
+					? '> grep: no matches found'
+					: '> 提示：在 URL 上加上 ?q=关键词 开始搜索';
+				li.style.color = 'rgb(var(--gray))';
+				li.style.padding = '0.4em 0.6em';
+				list.appendChild(li);
+			} else {
+				slice.forEach(function (post) {
+					var li = template.cloneNode(true);
+					li.removeAttribute('hidden');
+					li.removeAttribute('data-search-template');
+					var a = li.querySelector('a');
+					if (a) a.setAttribute('href', post.url);
+					li.querySelector('[data-f="author"]').textContent = post.author;
+					li.querySelector('[data-f="category"]').textContent = post.category;
+					li.querySelector('[data-f="date"]').textContent = fmtDate(post.pubDate);
+					li.querySelector('[data-f="title"]').textContent = post.title;
+					list.appendChild(li);
+				});
+			}
+
+			// 分页（与列表页一致：不可用方向显示灰色禁用态，不隐藏）
+			function link(p) {
+				return '/search?q=' + encodeURIComponent(q) + '&p=' + p;
+			}
+			function setPager(el, offEl, enabled, href) {
+				if (!el || !offEl) return;
+				if (enabled) {
+					el.removeAttribute('hidden');
+					el.setAttribute('href', href);
+					offEl.setAttribute('hidden', '');
+				} else {
+					el.setAttribute('hidden', '');
+					offEl.removeAttribute('hidden');
+				}
+			}
+			var prev = pagination.querySelector('[data-search-prev]');
+			var prevOff = pagination.querySelector('[data-search-prev-off]');
+			var next = pagination.querySelector('[data-search-next]');
+			var nextOff = pagination.querySelector('[data-search-next-off]');
+			var info = pagination.querySelector('[data-search-info]');
+			setPager(prev, prevOff, current > 1, link(current - 1));
+			setPager(next, nextOff, current < last, link(current + 1));
+			if (info) info.textContent = current + ' / ' + last;
+		});
+	})();
+</script>

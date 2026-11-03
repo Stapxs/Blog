@@ -5,11 +5,22 @@
  */
 
 :root {
+	color-scheme: dark;
 	--bg: #1a1a1a;
+	--surface: #232323;
 	--fg: #fff;
 	--content-width: 1000px;
-	--accent: #2337ff;
-	--accent-dark: #000d8a;
+	--line: #444;
+
+	/* 暗色模式调色板 */
+	--green: #1beb9e;
+	--purple: #b462ff;
+	--orange: #ff9528;
+	--blue: #18b6ff;
+	--pink: #ff45b4;
+	--yellow: #dddd25;
+
+	--accent: var(--blue);
 	--black: 255, 255, 255;
 	--gray: 153, 156, 166;
 	--gray-light: 56, 56, 56;
@@ -17,6 +28,73 @@
 	--box-shadow:
 		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
 		0 16px 32px rgba(var(--gray), 33%);
+}
+
+/* 页面切换：关闭根 View Transition 的交叉淡入
+ * （切页动画由幽灵层 + scramble 编排接管；主题涟漪也依赖此规则） */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+/* 终端命令染色（全站共用）：提示符绿、命令蓝、flags 橙、目录蓝、文件参数黄 */
+.cmd-prompt {
+	color: var(--green);
+}
+
+.cmd-name {
+	color: var(--blue);
+}
+
+.cmd-flag {
+	color: var(--orange);
+}
+
+.cmd-dir {
+	color: var(--blue);
+}
+
+.cmd-arg {
+	color: var(--yellow);
+}
+
+/* ============ 首次加载编排（boot 序列） ============ */
+/* html.boot 由 head 内联脚本在首屏渲染前添加；
+ * 无 JS / 减弱动效 / 序列结束时移除，一切照常显示。 */
+html.boot [data-boot] {
+	visibility: hidden;
+	opacity: 0;
+}
+
+html.boot [data-boot].boot-in {
+	visibility: visible;
+	opacity: 1;
+}
+
+[data-boot] {
+	transition: opacity 0.3s ease;
+}
+
+/* 亮色模式：同一套令牌的覆盖值 */
+html[data-theme="light"] {
+	color-scheme: light;
+	--bg: #eef5ee;
+	--surface: #f7fbf7;
+	--fg: #1a1a1a;
+	--line: #c8c8c8;
+
+	--green: #00996b;
+	--purple: #8f3fd0;
+	--orange: #d96e00;
+	--blue: #0079b8;
+	--pink: #d41c8f;
+	--yellow: #8f8f00;
+
+	--black: 26, 26, 26;
+	--gray: 100, 100, 100;
+	--gray-light: 222, 222, 222;
+	--gray-dark: 26, 26, 26;
 }
 body {
 	font-family: var(--font-pixel);
@@ -27,14 +105,16 @@ body {
 	color: var(--fg);
 	word-wrap: break-word;
 	overflow-wrap: break-word;
-	font-size: 20px;
+	font-size: 18px;
 	line-height: 1.7;
 }
 main {
-	width: var(--content-width);
+	box-sizing: border-box;
+	width: calc(var(--content-width) + 2em);
 	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 3em 1em;
+	margin: 2rem auto auto auto;
+	padding: 2em;
+	border: 1px solid var(--line);
 }
 h1,
 h2,
@@ -116,9 +196,6 @@ hr {
 	border-top: 1px solid rgb(var(--gray-light));
 }
 @media (max-width: 720px) {
-	body {
-		font-size: 18px;
-	}
 	main {
 		padding: 1em;
 	}
@@ -140,4 +217,71 @@ hr {
 	clip-path: inset(50%);
 	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
 	white-space: nowrap;
+}
+
+/* ============ 搜索面板 ============ */
+/* 无遮罩弹层：宽度为正文一半，绿色描边终端风 */
+.search-panel {
+	display: none;
+	position: fixed;
+	top: 8.5em;
+	left: 50%;
+	transform: translateX(-50%);
+	width: calc(var(--content-width) / 2);
+	max-width: calc(100% - 2em);
+	padding: 0.5em 1em;
+	background: var(--bg);
+	border: 1px solid var(--green);
+	z-index: 200;
+}
+
+.search-panel.open {
+	display: block;
+	animation: search-panel-in 0.16s ease;
+}
+
+/* 标题压在上边框上居中：背景色盖住边框线，绿色、略小 */
+.search-title {
+	position: absolute;
+	top: -0.6em;
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 0 0.6em;
+	background: var(--bg);
+	line-height: 1.2;
+	font-size: 0.8em;
+	color: var(--green);
+}
+
+.search-row {
+	display: flex;
+	align-items: center;
+	column-gap: 0.6em;
+}
+
+.search-input {
+	flex: 1;
+	min-width: 0;
+	background: none;
+	border: none;
+	outline: none;
+	color: var(--fg);
+	font: inherit;
+	caret-color: var(--green);
+}
+
+.search-input::placeholder {
+	color: rgb(var(--gray));
+	opacity: 0.7;
+}
+
+@keyframes search-panel-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -6px);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
 }

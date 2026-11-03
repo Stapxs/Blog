@@ -1,4 +1,4 @@
-import { Chart, Github, Rss } from 'pixelarticons/react';
+import { Chart, Github, Moon, Rss, Search, Sun } from 'pixelarticons/react';
 import HeaderLink from './HeaderLink';
 import styles from './Header.module.css';
 
@@ -12,19 +12,34 @@ export default function Header({ siteTitle, currentPath }: Props) {
 	return (
 		<header className={styles.header}>
 			<nav className={styles.nav}>
-				<h2 className={styles.title}>
-					<a href="/">{siteTitle} -&gt; /林槐的杂货铺</a>
+				<h2 className={styles.title} data-boot="title">
+					<a href="/">/var/www/blog.stapxs.cn -&gt; ~/{siteTitle}</a>
 				</h2>
-        <div className={styles.internalLinks}>
-          &gt; cd
+        <div className={styles.internalLinks} data-boot="nav">
+          <HeaderLink href="/">
+						.
+          </HeaderLink>
+          <HeaderLink href="/">
+						..
+          </HeaderLink>
+          <HeaderLink href="/">
+						.env
+					</HeaderLink>
 					<HeaderLink href="/" currentPath={currentPath}>
-						./Blog
+						./Archives
 					</HeaderLink>
 					<HeaderLink href="/about" currentPath={currentPath}>
 						./About
 					</HeaderLink>
 				</div>
-				<div className={styles.socialLinks}>
+				<div className={styles.socialLinks} data-boot="icons">
+					<button type="button" id="search-toggle" className={styles.iconButton} aria-label="搜索">
+						<Search width={24} height={24} aria-hidden="true" />
+					</button>
+					<button type="button" id="theme-toggle" className={styles.iconButton} aria-label="切换主题">
+						<Moon className={styles.iconMoon} width={24} height={24} aria-hidden="true" />
+						<Sun className={styles.iconSun} width={24} height={24} aria-hidden="true" />
+					</button>
 					<a href="https://status.stapxs.cn/share/lK6BSgpK8QJbYmke/blog.stapxs.cn" target="_blank">
 						<span className="sr-only">Site status / 统计</span>
 						<Chart width={24} height={24} aria-hidden="true" />

@@ -1,48 +1,66 @@
-import FormattedDate from '../FormattedDate';
+import PageTitle from '../PageTitle';
 import styles from './BlogIndex.module.css';
 
 export interface BlogIndexPost {
+	author: string;
+	category: string;
+	/** 本地格式化日期 YYYY-MM-DD。 */
+	pubDate: string;
 	title: string;
 	url: string;
-	/** ISO date string. */
-	pubDate: string;
-	/** Optimized hero image URL (already passed through `getImage`). */
-	heroUrl?: string;
-	heroWidth?: number;
-	heroHeight?: number;
+}
+
+export interface BlogPagination {
+	current: number;
+	last: number;
+	total: number;
+	prevUrl?: string;
+	nextUrl?: string;
 }
 
 interface Props {
 	posts: BlogIndexPost[];
+	pagination: BlogPagination;
 }
 
-export default function BlogIndex({ posts }: Props) {
+export default function BlogIndex({ posts, pagination }: Props) {
 	return (
-		<main>
-			<section>
-				<ul className={styles.list}>
-					{posts.map((post) => (
-						<li key={post.url}>
-							<a href={post.url}>
-								{post.heroUrl && (
-									<img
-										src={post.heroUrl}
-										width={post.heroWidth ?? 720}
-										height={post.heroHeight ?? 360}
-										alt=""
-										loading="lazy"
-										decoding="async"
-									/>
-								)}
-								<h4 className={styles.title}>{post.title}</h4>
-								<p className={styles.date}>
-									<FormattedDate date={post.pubDate} />
-								</p>
-							</a>
-						</li>
-					))}
-				</ul>
-			</section>
+		<main data-boot="main">
+			<PageTitle>Archives</PageTitle>
+			<div data-boot="cmd">
+				<span className="cmd-prompt">&gt;</span> <span className="cmd-name">ls</span>{' '}
+				<span className="cmd-flag">-al</span> <span className="cmd-dir">archives/</span>{' '}
+				<span className="cmd-flag">--interactive</span> <span className="cmd-flag">-p</span>{' '}
+				<span className="cmd-arg">{pagination.current}</span>
+			</div>
+			<ul className={styles.list} data-boot="rest" data-hover-list>
+				<li className={styles.hoverBar} data-hover-bar aria-hidden="true"></li>
+				{posts.map((post) => (
+					<li key={post.url}>
+						<a href={post.url} className={styles.row}>
+							<span className={styles.author}>{post.author}</span>
+							<span className={styles.category}>{post.category}</span>
+							<span className={styles.date}>{post.pubDate}</span>
+							<span className={styles.title}>{post.title}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+			<nav className={styles.pagination} data-boot="rest">
+				{pagination.prevUrl ? (
+					<a href={pagination.prevUrl}>← prev</a>
+				) : (
+					<span className={styles.disabled}>← prev</span>
+				)}
+				<span className={styles.pageInfo}>
+					{pagination.current} / {pagination.last}
+				</span>
+				{pagination.nextUrl ? (
+					<a href={pagination.nextUrl}>next →</a>
+				) : (
+					<span className={styles.disabled}>next →</span>
+				)}
+			</nav>
 		</main>
 	);
 }

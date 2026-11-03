@@ -1,0 +1,45 @@
+---
+import { getCollection } from "astro:content";
+import BlogIndex from "../components/pages/BlogIndex";
+import type { BlogIndexPost } from "../components/pages/BlogIndex";
+import Root from "../layouts/Root.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import { formatDateLocal } from "../scripts/datetime";
+
+export async function getStaticPaths({ paginate }) {
+    const posts = (await getCollection("blog")).sort(
+        (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+    );
+    return paginate(posts, { pageSize: 7 });
+}
+
+const { page } = Astro.props;
+
+const items: BlogIndexPost[] = page.data.map((post) => ({
+    author: post.data.author,
+    category: post.data.category,
+    pubDate: formatDateLocal(post.data.pubDate),
+    title: post.data.title,
+    url: `/archives/${post.id}/`,
+}));
+---
+
+<Root
+    title={
+        page.currentPage > 1
+            ? `${SITE_TITLE} · p${page.currentPage}`
+            : SITE_TITLE
+    }
+    description={SITE_DESCRIPTION}
+>
+    <BlogIndex
+        posts={items}
+        pagination={{
+            current: page.currentPage,
+            last: page.lastPage,
+            total: page.total,
+            prevUrl: page.url.prev,
+            nextUrl: page.url.next,
+        }}
+    />
+</Root>

@@ -1,79 +1,108 @@
 .list {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 2rem;
-	list-style-type: none;
-	margin: 0;
+	position: relative;
+	margin: 1rem 0 0;
 	padding: 0;
+	list-style: none;
 }
 
-.list li {
-	width: calc(50% - 1rem);
+/* 跨行跟随的 hover 指示条（由全局脚本驱动 transform） */
+.hoverBar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 0;
+	pointer-events: none;
+	background: rgb(var(--gray-light));
+	opacity: 0;
+	transition:
+		transform 0.15s ease,
+		height 0.15s ease,
+		opacity 0.12s ease;
 }
 
-.list li * {
+/* One post per line: <author> <category> <date> <title>
+   Fixed column widths keep everything aligned in the monospace font. */
+.row {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: baseline;
+	column-gap: 1.5em;
+	padding: 0.4em 0.6em;
+	color: inherit;
 	text-decoration: none;
-	transition: 0.2s ease;
+	border-bottom: 1px dashed rgb(var(--gray-light));
 }
 
-.list li:first-child {
-	width: 100%;
-	margin-bottom: 1rem;
-	text-align: center;
+.row:hover {
+	text-decoration: none;
 }
 
-.list li:first-child img {
-	width: 100%;
+.author {
+	flex: 0 0 8ch;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--purple);
 }
 
-.list li:first-child .title {
-	font-size: 2.369rem;
-}
-
-.list li img {
-	margin-bottom: 0.5rem;
-	border-radius: 12px;
-}
-
-.list li a {
-	display: block;
-}
-
-.title {
-	margin: 0;
-	color: rgb(var(--black));
-	line-height: 1;
+.category {
+	flex: 0 0 14ch;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	/* 分类按终端"目录"惯例染蓝 */
+	color: var(--blue);
 }
 
 .date {
-	margin: 0;
+	flex: 0 0 10ch;
 	color: rgb(var(--gray));
 }
 
-.list li a:hover h4,
-.list li a:hover .date {
-	color: var(--accent);
+.title {
+	flex: 1 1 0;
+	min-width: 0;
+	color: var(--fg);
+	overflow-wrap: anywhere;
 }
 
-.list a:hover img {
-	box-shadow: var(--box-shadow);
+.pagination {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 1.5em;
+	padding: 0 0.6em;
+}
+
+.pagination a {
+	text-decoration: none;
+}
+
+.pagination a:hover {
+	text-decoration: underline;
+}
+
+.disabled {
+	color: rgb(var(--gray-light));
+}
+
+.pageInfo {
+	color: rgb(var(--gray));
 }
 
 @media (max-width: 720px) {
-	.list {
-		gap: 0.5em;
+	/* Small screens: let the leading columns take their natural width and wrap. */
+	.row {
+		flex-wrap: wrap;
+		row-gap: 0.2em;
+		column-gap: 1em;
 	}
 
-	.list li {
-		width: 100%;
-		text-align: center;
-	}
-
-	.list li:first-child {
-		margin-bottom: 0;
-	}
-
-	.list li:first-child .title {
-		font-size: 1.563em;
+	.author,
+	.category {
+		flex-basis: auto;
+		overflow: visible;
 	}
 }
