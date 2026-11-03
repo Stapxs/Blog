@@ -1465,6 +1465,11 @@ picomatch@^4.0.4, picomatch@^4.0.7:
   resolved "https://registry.npmmirror.com/picomatch/-/picomatch-4.0.7.tgz#6313360034ccb36b3dc61ecbdff78121f90fe21f"
   integrity sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==
 
+pixelarticons@^2.4.2:
+  version "2.4.2"
+  resolved "https://registry.npmmirror.com/pixelarticons/-/pixelarticons-2.4.2.tgz#466ad7c409912fb59c2dc7f0c3388397508b1ec3"
+  integrity sha512-BZKSU5ckLuioZCzES4fEmdQfnI8XEiQlHljdIVk+N6+KH7vTBQJNtMs+V0LQF7nC7cZbKT0qBXFOsT35sl8uhg==
+
 postcss@^8.5.30:
   version "8.5.32"
   resolved "https://registry.npmmirror.com/postcss/-/postcss-8.5.32.tgz#fbccef8388a0c77508c713bfd37728d646595803"

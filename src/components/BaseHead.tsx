@@ -7,7 +7,7 @@ interface Props {
 	image: string;
 	/** Site origin, e.g. `https://example.com`. */
 	site: string;
-	/** Current page pathname, e.g. `/blog/`. */
+	/** Current page pathname, e.g. `/archives/…/`. */
 	pathname: string;
 	/** Absolute URL of the current page. */
 	pageUrl: string;

@@ -3,6 +3,6 @@
 	text-decoration: none;
 }
 
-.active {
-	font-weight: bolder;
+.link:hover {
+	text-decoration: underline;
 }

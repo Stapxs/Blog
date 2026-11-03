@@ -18,7 +18,7 @@ interface Props {
 
 export default function BlogIndex({ posts }: Props) {
 	return (
-		<main className={styles.main}>
+		<main>
 			<section>
 				<ul className={styles.list}>
 					{posts.map((post) => (

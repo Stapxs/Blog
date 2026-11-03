@@ -1,28 +1,47 @@
+/* Static bar: same width as the content column, scrolls with the page. */
 .header {
-	margin: 0;
+	box-sizing: border-box;
+	margin: 0 auto;
 	padding: 0 1em;
-	background: white;
-	box-shadow: 0 2px 8px rgba(var(--black), 5%);
+	width: calc(var(--content-width) + 2em);
+	max-width: calc(100% - 2em);
+	background: var(--bg);
 }
 
+/* Site title as a green terminal-style chip. */
 .title {
-	margin: 0;
+	order: 1;
+	/* auto margin keeps the chip at content width and pushes icons right. */
+	margin: 0 auto 0 0;
 	font-size: 1em;
+	padding: 0.2em 0.4em;
+	background: #23c283;
+	color: #1a1a1a;
 }
 
 .title a,
 .title a.active {
 	text-decoration: none;
+	color: inherit;
 }
 
 .nav {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	justify-content: space-between;
+}
+
+/* Nav links: own row below the title, left-aligned. */
+.internalLinks {
+	order: 3;
+	flex-basis: 100%;
+	display: flex;
+	justify-content: flex-start;
+	gap: 1em;
 }
 
 .nav a {
-	padding: 1em 0.5em;
+	padding: 0 0.5em;
 	color: var(--black);
 	border-bottom: 4px solid transparent;
 	text-decoration: none;
@@ -33,9 +52,16 @@
 	border-bottom-color: var(--accent);
 }
 
+/* Social icons: stay on the title row, right-aligned. */
+.socialLinks {
+    padding: 50px 0;
+	order: 2;
+}
+
 .socialLinks,
 .socialLinks a {
 	display: flex;
+	align-items: center;
 }
 
 @media (max-width: 720px) {

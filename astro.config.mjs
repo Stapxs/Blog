@@ -12,20 +12,14 @@ export default defineConfig({
 	fonts: [
 		{
 			provider: fontProviders.local(),
-			name: 'Atkinson',
-			cssVariable: '--font-atkinson',
-			fallbacks: ['sans-serif'],
+			name: 'Fusion Pixel 12px Monospaced SC',
+			cssVariable: '--font-pixel',
+			fallbacks: ['monospace'],
 			options: {
 				variants: [
 					{
-						src: ['./src/assets/fonts/atkinson-regular.woff'],
+						src: ['./src/assets/fonts/fusion-pixel-12px-monospaced-sc.woff2'],
 						weight: 400,
-						style: 'normal',
-						display: 'swap',
-					},
-					{
-						src: ['./src/assets/fonts/atkinson-bold.woff'],
-						weight: 700,
 						style: 'normal',
 						display: 'swap',
 					},
