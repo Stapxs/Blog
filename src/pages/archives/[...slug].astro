@@ -3,6 +3,7 @@ import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BlogPostView from '../../components/pages/BlogPostView';
 import Root from '../../layouts/Root.astro';
 import { formatDateLocal } from '../../scripts/datetime';
+import { fetchSongDetail } from '../../scripts/songDetail';
 
 export async function getStaticPaths() {
 	const posts = (await getCollection('blog')).filter((p) => !p.data.hidden);
@@ -22,6 +23,11 @@ const body = post.body ?? '';
 const wordCount =
 	(body.match(/[\u4e00-\u9fff]/g) ?? []).length +
 	(body.match(/[a-zA-Z0-9]+(?:['’-][a-zA-Z0-9]+)*/g) ?? []).length;
+
+// 关联歌曲（frontmatter music 字段）：构建期取详情，失败静默跳过
+const song = post.data.music
+	? await fetchSongDetail(post.data.music)
+	: undefined;
 ---
 
 <Root title={post.data.title} description={post.data.description} backToTop>
@@ -32,6 +38,7 @@ const wordCount =
 		pubDate={formatDateLocal(post.data.pubDate)}
 		updatedDate={post.data.updatedDate ? formatDateLocal(post.data.updatedDate) : undefined}
 		wordCount={wordCount}
+		song={song ?? undefined}
 	>
 		<Content />
 	</BlogPostView>

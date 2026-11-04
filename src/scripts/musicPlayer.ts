@@ -6,6 +6,8 @@
  * 面板 DOM（Root.astro 内 id=music-* 的节点）
  * ============================================================ */
 
+import { play } from "./scramble";
+
 /* ---------- 小工具 ---------- */
 
 function fmtVolume(t: number): string {
@@ -385,11 +387,12 @@ function markCurrentRow() {
  * 6. 播放列表 —— 网易云音乐歌单
  * ============================================================ */
 
+ //
 const PLAYLIST_API =
-    "https://api.stapxs.cn/music/playlist/detail?id=2175089467&s=0";
+    "https://api.stapxs.cn/music/playlist/detail?id=966613732&s=0";
 const PLAYLIST_LIMIT = 10;
 
-interface PlaylistTrack {
+export interface PlaylistTrack {
     id: number;
     name: string;
     tns: string | null;
@@ -428,6 +431,22 @@ async function loadPlaylist() {
         }));
         if (playlistTracks.length === 0) throw new Error("empty");
         renderPlaylist(box, playlistTracks);
+        if (
+            document.documentElement.classList.contains("music-open") &&
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ) {
+            box.querySelectorAll<HTMLElement>("[data-track]").forEach(
+                (row, i) => {
+                    row.animate([{ opacity: "0" }, { opacity: "1" }], {
+                        duration: 300,
+                        delay: i * 60,
+                        easing: "ease-out",
+                        fill: "backwards",
+                    });
+                    play(row, { duration: 600, delay: 450 + i * 60 });
+                },
+            );
+        }
         currentTrack = playlistTracks[0];
         markCurrentRow();
         setState("paused");
@@ -475,7 +494,48 @@ function renderPlaylist(box: HTMLElement, tracks: PlaylistTrack[]) {
 }
 
 /* ============================================================
- * 7. 启动
+ * 6.5 插播
+ * ============================================================ */
+
+export function queueAndPlay(track: PlaylistTrack) {
+    const existing = playlistTracks.find((t) => t.id === track.id);
+    if (existing) {
+        void playTrack(existing);
+        return;
+    }
+    const i = playlistTracks.findIndex((t) => t.id === currentTrack?.id);
+    if (i >= 0) playlistTracks.splice(i, 0, track);
+    else playlistTracks.push(track);
+    /* 队列变了要重渲染列表（纯渲染，不触发级联入场） */
+    const box = document.getElementById("music-playlist");
+    if (box) renderPlaylist(box, playlistTracks);
+    void playTrack(track);
+}
+
+/* ============================================================
+ * 7. 入场
+ * ============================================================ */
+
+function panelEntrance() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const rows = document.querySelectorAll<HTMLElement>("#music-player > div");
+    const playlist = document.getElementById("music-playlist");
+    /* 自上而下错峰：传输行 → 时间/音量行 → 播放列表 */
+    rows[0] && play(rows[0], { duration: 800 });
+    rows[1] && play(rows[1], { duration: 800, delay: 150 });
+    if (playlist) {
+        playlist.animate([{ opacity: "0" }, { opacity: "1" }], {
+            duration: 450,
+            delay: 300,
+            easing: "ease-out",
+            fill: "backwards",
+        });
+        play(playlist, { duration: 900, delay: 300 });
+    }
+}
+
+/* ============================================================
+ * 8. 启动
  * ============================================================ */
 
 export function initMusicPlayer() {
@@ -490,5 +550,27 @@ export function initMusicPlayer() {
     spectrum();
     void loadPlaylist();
     document.fonts?.ready.then(() => markCurrentRow());
+    /* 面板每次打开（Root.astro 在 #music-toggle 点开时派发事件）：
+     * 文字解密入场 */
+    window.addEventListener("music-panel-open", panelEntrance);
+    /* 文章页关联歌曲的播放按钮（[data-song-id]，歌曲信息由构建期
+     * 烘在 data-* 上）：插播 + 请求弹出面板。
+     * 委托在 document 上 —— 切页后的新按钮自动生效 */
+    document.addEventListener("click", (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>(
+            "[data-song-id]",
+        );
+        if (!btn) return;
+        const id = Number(btn.dataset.songId);
+        if (!id) return;
+        queueAndPlay({
+            id,
+            name: btn.dataset.songName ?? "未知曲目",
+            tns: btn.dataset.songTns || null,
+            artist: btn.dataset.songArtist ?? "未知",
+            cover: btn.dataset.songCover ?? "",
+        });
+        window.dispatchEvent(new Event("music-panel-open-request"));
+    });
     document.addEventListener("astro:after-swap", renderButtons);
 }

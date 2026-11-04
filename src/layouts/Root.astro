@@ -290,19 +290,6 @@ const { title, description, image = FallbackImage, backToTop = false } =
                 // 面板本体带 transition:persist，切页前后是同一个 DOM（样式随 class 生效）
                 var musicOpen = false;
                 var syncMusicPanel = function () {
-                    var panel = document.getElementById("music-panel");
-                    // 先写顶端坐标再挂 class：打开的第一帧即对齐 main 顶端，
-                    // 不触发 top 过渡（top 也不在过渡属性列表里）
-                    if (panel && musicOpen) {
-                        var main = document.querySelector("main");
-                        if (main) {
-                            var top = main.getBoundingClientRect().top;
-                            panel.style.setProperty(
-                                "--music-panel-top",
-                                Math.max(top, 8) + "px",
-                            );
-                        }
-                    }
                     document.documentElement.classList.toggle(
                         "music-open",
                         musicOpen,
@@ -316,9 +303,26 @@ const { title, description, image = FallbackImage, backToTop = false } =
                 };
                 document.addEventListener("click", function (e) {
                     var btn = e.target.closest("#music-toggle");
-                    if (!btn) return;
-                    musicOpen = !musicOpen;
-                    syncMusicPanel();
+                    if (btn) {
+                        musicOpen = !musicOpen;
+                        syncMusicPanel();
+                        // 打开时通知播放器（musicPlayer.ts）：
+                        // 面板文字做和 main 一样的解密入场。只在用户点开时派发
+                        // —— after-swap 的重挂 class 不算「打开」
+                        if (musicOpen)
+                            window.dispatchEvent(new Event("music-panel-open"));
+                        return;
+                    }
+                    // 与搜索面板同款：点击面板外空白处关闭。
+                    // [data-song-id]（文章页关联歌曲）除外 —— 它的点播
+                    // 会请求打开面板，不能被当成「点空白」
+                    if (
+                        musicOpen &&
+                        !e.target.closest("#music-panel, [data-song-id]")
+                    ) {
+                        musicOpen = false;
+                        syncMusicPanel();
+                    }
                 });
                 document.addEventListener("keydown", function (e) {
                     if (e.key === "Escape" && musicOpen) {
@@ -326,11 +330,86 @@ const { title, description, image = FallbackImage, backToTop = false } =
                         syncMusicPanel();
                     }
                 });
-                window.addEventListener("resize", function () {
-                    // 视口变化重新对齐 main 顶端（header 高度 / 滚动位置都可能变）
-                    if (musicOpen) syncMusicPanel();
+                // 外部请求打开面板（文章页关联歌曲点播时 musicPlayer.ts 派发）：
+                // 已开则忽略；真正打开时同样派发入场事件
+                window.addEventListener("music-panel-open-request", function () {
+                    if (musicOpen) return;
+                    musicOpen = true;
+                    syncMusicPanel();
+                    window.dispatchEvent(new Event("music-panel-open"));
                 });
                 document.addEventListener("astro:after-swap", syncMusicPanel);
+
+                // 点击像素涟漪：指针落点在 4px 网格上扩散一圈像素圆环。
+                // 各帧阴影数量不同、无法插值 —— 浏览器按关键帧离散翻转，
+                // 恰好是逐格跳变的像素步进感；opacity 单独平滑淡出。
+                // 半径步进 2 格（8px）保持扩散节奏，环线只有 4px 细
+                (function () {
+                    if (
+                        window.matchMedia("(prefers-reduced-motion: reduce)")
+                            .matches
+                    )
+                        return;
+                    /* 半径 r 的 1 格厚像素圆环（列/行扫边界，Set 去重） */
+                    var ring = function (r) {
+                        var cells = new Set();
+                        var add = function (x, y) {
+                            cells.add(x + "," + y);
+                        };
+                        for (var x = -r; x <= r; x++) {
+                            var y = Math.round(Math.sqrt(r * r - x * x));
+                            add(x, y);
+                            add(x, -y);
+                        }
+                        for (var k = -r; k <= r; k++) {
+                            var j = Math.round(Math.sqrt(r * r - k * k));
+                            add(j, k);
+                            add(-j, k);
+                        }
+                        var shadows = [];
+                        cells.forEach(function (key) {
+                            var p = key.split(",");
+                            shadows.push(
+                                p[0] * 4 + "px " + p[1] * 4 + "px 0 0 currentColor",
+                            );
+                        });
+                        return shadows.join(",");
+                    };
+                    document.addEventListener("pointerdown", function (e) {
+                        var el = document.createElement("div");
+                        el.className = "pixel-ripple";
+                        el.style.left = e.clientX - 2 + "px";
+                        el.style.top = e.clientY - 2 + "px";
+                        // 挂在 <html> 而非 <body>：切页只替换 body，
+                        // 挂在 html 下的涟漪不会被换掉（与 transition:persist
+                        // 的「提升到 html」同款技巧），点链接切页涟漪也能播完
+                        document.documentElement.appendChild(el);
+                        var anim = el.animate(
+                            [
+                                { boxShadow: ring(1), opacity: 1 },
+                                { boxShadow: ring(3), opacity: 1, offset: 0.3 },
+                                {
+                                    boxShadow: ring(5),
+                                    opacity: 0.85,
+                                    offset: 0.6,
+                                },
+                                {
+                                    boxShadow: ring(7),
+                                    opacity: 0.5,
+                                    offset: 0.85,
+                                },
+                                { boxShadow: ring(9), opacity: 0 },
+                            ],
+                            { duration: 480, easing: "ease-out" },
+                        );
+                        anim.onfinish = function () {
+                            el.remove();
+                        };
+                        anim.oncancel = function () {
+                            el.remove();
+                        };
+                    });
+                })();
             })();
         </script>
         <Font cssVariable="--font-pixel" preload />
@@ -364,7 +443,7 @@ const { title, description, image = FallbackImage, backToTop = false } =
             role="complementary"
             aria-label="音乐播放器"
         >
-            <span class={musicStyles.title}>音乐</span>
+            <span class={musicStyles.title}>音乐播放器</span>
             {/* 播放器本体：id=music-* 的节点跨页持久（transition:persist），脚本监听器无需重挂 */}
             <div class={musicStyles.player} id="music-player">
                 <span

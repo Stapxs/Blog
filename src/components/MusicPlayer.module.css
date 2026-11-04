@@ -2,7 +2,8 @@
 
 .panel {
 	position: fixed;
-	top: calc(var(--music-panel-top, 9em) - 20px);
+	height: 65vh;
+	top: auto;
 	bottom: 6em;
 	left: auto;
 	width: 350px;
@@ -208,7 +209,7 @@
 
 .playlist [data-current] {
 	background: var(--red);
-	color: rgb(var(--black));
+	color: var(--red-fg); /* 红底前景：暗色主题黑字 / 亮色主题白字 */
 }
 
 .playlist [data-current] [data-cover] {

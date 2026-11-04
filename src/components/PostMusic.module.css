@@ -1,0 +1,68 @@
+/* 文章页关联歌曲：红色边框信息条 */
+
+.box {
+	display: flex;
+	align-items: center;
+	gap: 0.8em;
+	margin: 1em 0;
+	padding: 0.6em;
+	border: 1px solid var(--red);
+	background: color-mix(in srgb, var(--red) 12%, transparent);
+}
+
+.cover {
+	flex: none;
+	width: 3.2em;
+	height: 3.2em;
+	box-sizing: border-box;
+	border: 1px solid var(--line);
+}
+
+.info {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.15em;
+}
+
+.nameLine {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tns {
+	color: rgb(var(--gray));
+}
+
+.artists {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: rgb(var(--gray));
+}
+
+.play {
+	flex: none;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 3.2em;
+	height: 3.2em;
+	padding: 0;
+	background: var(--red);
+	border: 1px solid var(--red);
+	color: var(--red-fg); /* 红底前景：暗色主题黑字 / 亮色主题白字 */
+	cursor: pointer;
+}
+
+.play:hover {
+	opacity: 0.85;
+}
+
+.play:focus-visible {
+	outline: 2px solid var(--red);
+	outline-offset: 2px;
+}

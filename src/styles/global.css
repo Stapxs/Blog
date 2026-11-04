@@ -26,6 +26,9 @@
 	--gray: 153, 156, 166;
 	--gray-light: 56, 56, 56;
 	--gray-dark: 255, 255, 255;
+	/* 红底上的前景：暗色主题的红很亮配黑字、亮色主题的红很深配白字
+	 * （方向与 --black 墨色相反） */
+	--red-fg: #000;
 	--box-shadow:
 		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
 		0 16px 32px rgba(var(--gray), 33%);
@@ -103,6 +106,7 @@ html[data-theme="light"] {
 	--gray: 100, 100, 100;
 	--gray-light: 222, 222, 222;
 	--gray-dark: 26, 26, 26;
+	--red-fg: #fff;
 }
 body {
 	font-family: var(--font-pixel);
@@ -328,4 +332,38 @@ html.music-open main {
 	main[data-boot]:not([data-boot='static']) {
 		transition: opacity 0.3s ease;
 	}
+}
+
+
+/* ============ 像素圆形指针 ============ */
+/* 8×8 像素圆环 + 中心点，2 倍渲染为 16px（热点圆心）；
+   暗色主题白色、亮色主题黑色。全站统一 —— 覆盖各处原有的
+   pointer / default / text 等系统光标 */
+html {
+	cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 8 8' shape-rendering='crispEdges' fill='%23fff'><rect x='2' y='0' width='1' height='1'/><rect x='3' y='0' width='1' height='1'/><rect x='4' y='0' width='1' height='1'/><rect x='5' y='0' width='1' height='1'/><rect x='0' y='1' width='1' height='1'/><rect x='7' y='1' width='1' height='1'/><rect x='0' y='2' width='1' height='1'/><rect x='7' y='2' width='1' height='1'/><rect x='0' y='3' width='1' height='1'/><rect x='3' y='3' width='1' height='1'/><rect x='4' y='3' width='1' height='1'/><rect x='7' y='3' width='1' height='1'/><rect x='0' y='4' width='1' height='1'/><rect x='3' y='4' width='1' height='1'/><rect x='4' y='4' width='1' height='1'/><rect x='7' y='4' width='1' height='1'/><rect x='0' y='5' width='1' height='1'/><rect x='7' y='5' width='1' height='1'/><rect x='0' y='6' width='1' height='1'/><rect x='7' y='6' width='1' height='1'/><rect x='2' y='7' width='1' height='1'/><rect x='3' y='7' width='1' height='1'/><rect x='4' y='7' width='1' height='1'/><rect x='5' y='7' width='1' height='1'/></svg>") 8 8, auto;
+}
+
+html[data-theme='light'] {
+	cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 8 8' shape-rendering='crispEdges' fill='%23000'><rect x='2' y='0' width='1' height='1'/><rect x='3' y='0' width='1' height='1'/><rect x='4' y='0' width='1' height='1'/><rect x='5' y='0' width='1' height='1'/><rect x='0' y='1' width='1' height='1'/><rect x='7' y='1' width='1' height='1'/><rect x='0' y='2' width='1' height='1'/><rect x='7' y='2' width='1' height='1'/><rect x='0' y='3' width='1' height='1'/><rect x='3' y='3' width='1' height='1'/><rect x='4' y='3' width='1' height='1'/><rect x='7' y='3' width='1' height='1'/><rect x='0' y='4' width='1' height='1'/><rect x='3' y='4' width='1' height='1'/><rect x='4' y='4' width='1' height='1'/><rect x='7' y='4' width='1' height='1'/><rect x='0' y='5' width='1' height='1'/><rect x='7' y='5' width='1' height='1'/><rect x='0' y='6' width='1' height='1'/><rect x='7' y='6' width='1' height='1'/><rect x='2' y='7' width='1' height='1'/><rect x='3' y='7' width='1' height='1'/><rect x='4' y='7' width='1' height='1'/><rect x='5' y='7' width='1' height='1'/></svg>") 8 8, auto;
+}
+
+body,
+body * {
+	cursor: inherit !important;
+}
+
+/* ============ 点击像素涟漪 ============ */
+/* 一个 4px 网格单元，box-shadow 拼出像素圆环（见 Root.astro 内联脚本）；
+   颜色走主题墨色令牌 */
+.pixel-ripple {
+	position: fixed;
+	width: 4px;
+	height: 4px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	background: none;
+	pointer-events: none;
+	z-index: 9999;
+	color: rgb(var(--black));
 }

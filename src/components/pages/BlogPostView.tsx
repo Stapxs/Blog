@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import PageTitle from '../PageTitle';
+import PostMusic from '../PostMusic';
 import styles from './BlogPostView.module.css';
+import type { SongBrief } from '../../scripts/songDetail';
 
 interface Props {
 	/** Big location heading shown at the top of the prose column (e.g. "About"). */
@@ -12,6 +14,8 @@ interface Props {
 	/** 本地格式化日期 YYYY-MM-DD。 */
 	updatedDate?: string;
 	wordCount?: number;
+	/** 关联歌曲（frontmatter music 字段，构建期取好）：日期行下方的播放条。 */
+	song?: SongBrief;
 	children: ReactNode;
 }
 
@@ -22,6 +26,7 @@ export default function BlogPostView({
 	pubDate,
 	updatedDate,
 	wordCount,
+	song,
 	children,
 }: Props) {
 	return (
@@ -54,6 +59,7 @@ export default function BlogPostView({
 									</>
 								)}
 							</div>
+							{song && <PostMusic song={song} />}
 							<hr />
 						</div>
 						{children}
