@@ -3,8 +3,10 @@ import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import type { ImageMetadata } from "astro";
 import BaseHead from "../components/BaseHead";
+import FloatActions from "../components/FloatActions";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import musicStyles from "../components/MusicPlayer.module.css";
 import FallbackImage from "../assets/blog-placeholder-1.png";
 import { SITE_TITLE } from "../consts";
 import "../styles/global.css";
@@ -18,9 +20,12 @@ interface Props {
     title: string;
     description: string;
     image?: ImageMetadata;
+    /** 文章页：右下角悬浮区显示「回到顶部」按钮。 */
+    backToTop?: boolean;
 }
 
-const { title, description, image = FallbackImage } = Astro.props;
+const { title, description, image = FallbackImage, backToTop = false } =
+    Astro.props;
 ---
 
 <!doctype html>
@@ -266,6 +271,66 @@ const { title, description, image = FallbackImage } = Astro.props;
                     if (history.length > 1) history.back();
                     else location.href = "/";
                 });
+
+                // "#back-to-top" = 回到顶部（平滑滚动，减弱动效时直接跳）
+                document.addEventListener("click", function (e) {
+                    var top = e.target.closest("#back-to-top");
+                    if (!top) return;
+                    var reduce = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)",
+                    ).matches;
+                    window.scrollTo({
+                        top: 0,
+                        behavior: reduce ? "auto" : "smooth",
+                    });
+                });
+
+                // "#music-toggle" = 音乐面板开关。状态存 JS 变量而非 html 的 class：
+                // 切页时 ClientRouter 会整体替换 <html> 的属性，astro:after-swap 后重挂。
+                // 面板本体带 transition:persist，切页前后是同一个 DOM（样式随 class 生效）
+                var musicOpen = false;
+                var syncMusicPanel = function () {
+                    var panel = document.getElementById("music-panel");
+                    // 先写顶端坐标再挂 class：打开的第一帧即对齐 main 顶端，
+                    // 不触发 top 过渡（top 也不在过渡属性列表里）
+                    if (panel && musicOpen) {
+                        var main = document.querySelector("main");
+                        if (main) {
+                            var top = main.getBoundingClientRect().top;
+                            panel.style.setProperty(
+                                "--music-panel-top",
+                                Math.max(top, 8) + "px",
+                            );
+                        }
+                    }
+                    document.documentElement.classList.toggle(
+                        "music-open",
+                        musicOpen,
+                    );
+                    var musicBtn = document.getElementById("music-toggle");
+                    if (musicBtn)
+                        musicBtn.setAttribute(
+                            "aria-expanded",
+                            String(musicOpen),
+                        );
+                };
+                document.addEventListener("click", function (e) {
+                    var btn = e.target.closest("#music-toggle");
+                    if (!btn) return;
+                    musicOpen = !musicOpen;
+                    syncMusicPanel();
+                });
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape" && musicOpen) {
+                        musicOpen = false;
+                        syncMusicPanel();
+                    }
+                });
+                window.addEventListener("resize", function () {
+                    // 视口变化重新对齐 main 顶端（header 高度 / 滚动位置都可能变）
+                    if (musicOpen) syncMusicPanel();
+                });
+                document.addEventListener("astro:after-swap", syncMusicPanel);
             })();
         </script>
         <Font cssVariable="--font-pixel" preload />
@@ -292,7 +357,31 @@ const { title, description, image = FallbackImage } = Astro.props;
                 />
             </div>
         </div>
+        {/* 音乐播放器面板：打开时 main 左移腾位、本面板从右缘滑入悬浮占满剩余宽度
+            （顶端对齐 main 顶端、底端避让右下角悬浮按钮区；开关逻辑见 head 内联脚本）。
+            transition:persist：切页时整棵子树原样保留 —— 面板状态与未来的音频播放不随导航中断 */}
+        <div
+            class={musicStyles.panel}
+            id="music-panel"
+            transition:persist="music-panel"
+            role="complementary"
+            aria-label="音乐播放器"
+        >
+            <span class={musicStyles.title}>音乐</span>
+            <div class={musicStyles.body}>
+                <div class={musicStyles.eq} aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <p class={musicStyles.hint}>播放器施工中 …</p>
+            </div>
+        </div>
         <slot />
+        {/* 页面右下角悬浮操作区：main 之后的 body 直接子级
+            （横向贴页面右缘；纵向 sticky，落位与 main 底边缘对齐） */}
+        <FloatActions backToTop={backToTop} />
         <Footer />
     </body>
 
@@ -321,10 +410,11 @@ const { title, description, image = FallbackImage } = Astro.props;
             });
             show(nav);
 
-            /* P2（t≈1.5s）：main 框架（内容仍隐藏）+ 右上角图标 —— 淡入 */
+            /* P2（t≈1.5s）：main 框架（内容仍隐藏）+ 右上角图标 + 右下角悬浮按钮 —— 淡入 */
             window.setTimeout(() => {
                 show(one('[data-boot="main"]'));
                 show(one('[data-boot="icons"]'));
+                show(one('[data-boot="dock"]'));
             }, 1500);
 
             /* P3（t≈2.3s）：位置标题 + 命令行 —— 打字机 */
@@ -689,5 +779,58 @@ const { title, description, image = FallbackImage } = Astro.props;
             },
             true,
         );
+
+        /* ================= 回到顶部进度指示器 =================
+         * main 滚动进度：0% = main 顶部到达视口顶部，
+         * 100% = main 底部到达视口底部 —— 只按 main 计算，
+         * main 之后的 footer（以及将来的评论区）不参与。
+         * 描边顺时针行进：path 自左上角顺时针一圈，
+         * pathLength=100 → dashoffset=100-进度 即已绘长度。
+         * 按钮本身随 data-show 淡入淡出：滚入 main 出现，滚回 main 顶之上消失。 */
+        let progressMain = document.querySelector<HTMLElement>(
+            '[data-boot="main"]',
+        );
+        // 按钮内还有图标 svg，必须按 data 标记命中进度环的 path
+        let progressPath = document.querySelector<SVGPathElement>(
+            "[data-backtop-path]",
+        );
+        let progressBtn = document.querySelector<HTMLElement>("#back-to-top");
+
+        const updateTopProgress = () => {
+            if (!progressMain || !progressPath) return;
+            const vh = window.innerHeight;
+            const rect = progressMain.getBoundingClientRect();
+            const start = rect.top + window.scrollY; // main 顶贴视口顶时的 scrollY
+            const end = start + rect.height - vh; // main 底贴视口底时的 scrollY
+            const span = end - start;
+            const ratio =
+                span > 0
+                    ? Math.min(1, Math.max(0, (window.scrollY - start) / span))
+                    : window.scrollY >= end
+                      ? 1
+                      : 0;
+            progressPath.style.strokeDashoffset = String(
+                100 - Math.round(ratio * 100),
+            );
+            // 滚入 main（进度 > 0）才出现，回到 main 顶部之上淡出
+            progressBtn?.toggleAttribute("data-show", ratio > 0);
+        };
+
+        window.addEventListener("scroll", updateTopProgress, {
+            passive: true,
+        });
+        window.addEventListener("resize", updateTopProgress);
+        document.addEventListener("astro:after-swap", () => {
+            // 切页后 DOM 全新：重新抓取元素并立即刷新一次
+            progressMain = document.querySelector<HTMLElement>(
+                '[data-boot="main"]',
+            );
+            progressPath = document.querySelector<SVGPathElement>(
+                "[data-backtop-path]",
+            );
+            progressBtn = document.querySelector<HTMLElement>("#back-to-top");
+            updateTopProgress();
+        });
+        updateTopProgress();
     </script>
 </html>

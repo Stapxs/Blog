@@ -24,7 +24,7 @@ const wordCount =
 	(body.match(/[a-zA-Z0-9]+(?:['’-][a-zA-Z0-9]+)*/g) ?? []).length;
 ---
 
-<Root title={post.data.title} description={post.data.description}>
+<Root title={post.data.title} description={post.data.description} backToTop>
 	<BlogPostView
 		location="Archives"
 		title={post.data.title}

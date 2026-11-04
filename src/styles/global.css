@@ -19,6 +19,7 @@
 	--blue: #18b6ff;
 	--pink: #ff45b4;
 	--yellow: #dddd25;
+	--red: #ff5252;
 
 	--accent: var(--blue);
 	--black: 255, 255, 255;
@@ -96,6 +97,7 @@ html[data-theme="light"] {
 	--blue: #0079b8;
 	--pink: #d41c8f;
 	--yellow: #8f8f00;
+	--red: #d32f2f;
 
 	--black: 26, 26, 26;
 	--gray: 100, 100, 100;
@@ -119,7 +121,9 @@ main {
 	width: calc(var(--content-width) + 2em);
 	max-width: calc(100% - 2em);
 	margin: 2rem auto auto auto;
-	padding: 2em;
+	/* 底部多留 2em：页面右下角悬浮按钮落位时与 main 底边缘对齐（3em 高），
+	 * 窄窗口下按钮会压在 main 右下角上方 —— 留白保证不遮挡分页器等内容 */
+	padding: 2em 2em 4em;
 	border: 1px solid var(--line);
 }
 h1,
@@ -206,7 +210,7 @@ hr {
 }
 @media (max-width: 720px) {
 	main {
-		padding: 1em;
+		padding: 1em 1em 4em;
 	}
 }
 
@@ -292,5 +296,35 @@ hr {
 	to {
 		opacity: 1;
 		transform: translate(-50%, 0);
+	}
+}
+
+/* ============ 音乐播放器：main 腾位 ============ */
+/* 面板（MusicPlayer.module.css）打开时 main 左移贴住左缘（留 1em），
+ * 为右侧悬浮面板腾出剩余宽度。位移 = 原居中位置与左移目标（1em）之差 ——
+ * 窄屏下 main 已满宽，计算结果自然为 0。
+ * 用 transform 不改文档流：右下角悬浮按钮区与 footer 的位置不受影响。 */
+main[data-boot]:not([data-boot='static']) {
+	transition:
+		opacity 0.3s ease,
+		transform 0.35s ease;
+}
+
+html.music-open main {
+	--music-main-w: min(calc(var(--content-width) + 2em), calc(100vw - 2em));
+	transform: translateX(calc(1em - (100vw - var(--music-main-w)) / 2));
+}
+
+/* 临时窄屏回退（与 MusicPlayer.module.css 的面板回退同界 1399px）：
+ * 剩余宽度不足以分栏 —— main 不再左移，面板悬浮覆盖在 main 右侧 */
+@media (max-width: 1399px) {
+	html.music-open main {
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	main[data-boot]:not([data-boot='static']) {
+		transition: opacity 0.3s ease;
 	}
 }
