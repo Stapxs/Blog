@@ -303,36 +303,9 @@ hr {
 	}
 }
 
-/* ============ 音乐播放器：main 腾位 ============ */
-/* 面板（MusicPlayer.module.css）打开时 main 左移贴住左缘（留 1em），
- * 为右侧悬浮面板腾出剩余宽度。位移 = 原居中位置与左移目标（1em）之差 ——
- * 窄屏下 main 已满宽，计算结果自然为 0。
- * 用 transform 不改文档流：右下角悬浮按钮区与 footer 的位置不受影响。 */
-main[data-boot]:not([data-boot='static']) {
-	transition:
-		opacity 0.3s ease,
-		transform 0.35s ease;
-}
-
-html.music-open main {
-	--music-main-w: min(calc(var(--content-width) + 2em), calc(100vw - 2em));
-	transform: translateX(calc(1em - (100vw - var(--music-main-w)) / 2));
-}
-
-/* 临时窄屏回退（与 MusicPlayer.module.css 的面板回退同界 1419px）：
- * 视口不足以同时容纳 main(1002) + 350px 面板时不再分栏 ——
- * main 不再左移，面板悬浮覆盖在 main 右侧 */
-@media (max-width: 1419px) {
-	html.music-open main {
-		transform: none;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	main[data-boot]:not([data-boot='static']) {
-		transition: opacity 0.3s ease;
-	}
-}
+/* ============ 音乐播放器 ============ */
+/* 面板悬浮叠加在 main 右侧上方（不推移布局，main 保持居中不动）。
+ * 播放器区域本身自带 z-index，遮住 main 的右侧部分即可。 */
 
 
 /* ============ 像素圆形指针 ============ */

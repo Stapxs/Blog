@@ -37,3 +37,82 @@
 .content > :last-child {
 	margin-bottom: 0;
 }
+
+/* ============ markdown 正文排版 ============ */
+/* 标题整体降一号：正文的 h1 不再压过文章标题（titleBlock 的 h2），
+ * 每级沿用全局字号阶梯（global.css）的下一级尺寸。
+ * 只作用于正文 —— titleBlock / PageTitle 不受影响。 */
+.markdown h1 {
+	font-size: 2.441em;
+}
+
+.markdown h2 {
+	font-size: 1.953em;
+}
+
+.markdown h3 {
+	font-size: 1.563em;
+}
+
+.markdown h4 {
+	font-size: 1.25em;
+}
+
+.markdown h5 {
+	font-size: 1em;
+}
+
+.markdown h1,
+.markdown h2 {
+	padding-bottom: 0.3em;
+	border-bottom: 1px solid rgb(var(--gray-light));
+}
+
+.markdown h1::after,
+.markdown h2::after,
+.markdown h3::after {
+	float: right;
+	margin-left: 0.6em;
+	margin-top: 0.15em;
+	color: rgb(var(--gray));
+	font-weight: 400;
+	font-size: 0.7em;
+}
+
+.markdown h1::after {
+	content: "#1";
+}
+
+.markdown h2::after {
+	content: "#2";
+}
+
+.markdown h3::after {
+	content: "#3";
+}
+
+.markdown h6 {
+    width: 100%;
+    display: block;
+    text-align: center;
+    font-weight: normal;
+    font-size: 0.8em;
+    margin: -1em 0 3em 0;
+    opacity: 0.7;
+}
+.markdown h6::before {
+    content: '> ';
+}
+.markdown h6::after {
+    content: ' <';
+}
+
+.markdown p > img {
+	display: block;
+	margin: 2em auto;
+	max-width: 90%;
+}
+
+.markdown > :last-child {
+	margin-bottom: 0;
+}

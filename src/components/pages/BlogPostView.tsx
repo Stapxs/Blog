@@ -62,7 +62,8 @@ export default function BlogPostView({
 							{song && <PostMusic song={song} />}
 							<hr />
 						</div>
-						{children}
+						{/* 正文独立包裹：markdown 排版样式（如标题降号）只作用于这里 */}
+						<div className={styles.markdown}>{children}</div>
 					</div>
 				</div>
 			</article>
