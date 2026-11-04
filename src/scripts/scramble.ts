@@ -1,13 +1,9 @@
 /* ============================================================
- * musicforprogramming.net「逐字解密」效果
- * （原站 Svelte transition Kt 的 1:1 反压缩还原，原生 JS 驱动）
- * 移植自 scramble-demo.html，保留原算法与中文宽度适配。
- * 改进：play() 调用时同步先渲染起始帧，避免 delay 期间闪出真实文本。
+ * CopyRight musicforprogramming.net
+ * 此文字效果为借鉴实现，并优化了对中文的适配；如有版权问题请联系：
+ * 1007028430.stapx@gmail.com
  * ============================================================ */
 
-/* 注意：乱码池必须只含目标字体确定覆盖的字符 ——
- * 一旦回退到系统字体，行高不同会导致行框高度跳动。
- * 故只使用 ASCII（像素字体全覆盖）。 */
 const GLYPHS = '[]{}()<>/=+*~^?#$%&@!|;:._-x';
 const NBSP = '\u00a0'; // 不断行空格：占位但不会被 HTML 折叠
 
@@ -116,7 +112,7 @@ function scramble(node: HTMLElement, { duration = 1000, delay = 0, reverse = fal
 	const pReal = reverse ? 0.1 : 0.8; // 真字符概率阈值
 	const dir = reverse ? -1 : 1;
 
-	/* 与原站一致：离场时元素脱离文档流（absolute 悬浮），并禁掉指针事件 */
+	/* 离场时元素脱离文档流（absolute 悬浮），并禁掉指针事件 */
 	if (absolute) node.style.position = 'absolute', (node.style.top = '0');
 	if (!pointerEvents) node.style.pointerEvents = 'none';
 
@@ -168,7 +164,7 @@ function scramble(node: HTMLElement, { duration = 1000, delay = 0, reverse = fal
 	};
 }
 
-/* rAF 驱动（Svelte transition 机制的等价物）。
+/* rAF 驱动
  * 入场进度 0→1，离场（reverse）1→0。
  * 性能：用 performance.now() 而非 rAF 回调时间戳，
  * 后者在部分环境（无头浏览器、后台标签页节流）下与真实时间不同步。 */

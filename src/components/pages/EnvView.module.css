@@ -1,4 +1,3 @@
-/* env 输出块：与正文一致的"屏幕"底色 */
 .env {
 	margin-top: 1rem;
 	padding: 1.5em 1.5em 1em;
@@ -15,7 +14,6 @@
 	padding-top: 0;
 }
 
-/* dotenv 高亮惯例：键名蓝、等号灰、值绿 */
 .key {
 	color: var(--blue);
 	flex: 0 0 auto;

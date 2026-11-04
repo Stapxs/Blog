@@ -11,7 +11,6 @@ interface Props {
 	pubDate: string;
 	/** 本地格式化日期 YYYY-MM-DD。 */
 	updatedDate?: string;
-	/** Body word count (CJK chars + latin words), computed by the route. */
 	wordCount?: number;
 	children: ReactNode;
 }

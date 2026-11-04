@@ -43,6 +43,22 @@ import SearchView from '../components/pages/SearchView';
 		}
 
 		window.__searchIndex.then(function (index) {
+			// 等入场动画启动后再写入 DOM ——
+			// before-swap 的防御性预空白（blankNode）会在 reveal 时被 restoreNode
+			// 恢复原文；若在此前写入，页数等动态文本会被恢复操作抹掉
+			var scheduleFill = function (fill) {
+				window.setTimeout(function waitReveal() {
+					var rest = document.querySelector('[data-search-pagination]');
+					// reveal 的标志：分页器可见（inline visibility 已被 reveal 清除或设为 visible）
+					if (rest && rest.style.visibility === 'hidden') {
+						window.setTimeout(waitReveal, 60);
+						return;
+					}
+					fill();
+				}, 60);
+			};
+
+			scheduleFill(function () {
 			// 词法：cat:xxx / tag:xxx 为字段过滤（精确匹配），其余为全文子串（AND）
 			var rawTerms = q.split(/\s+/).filter(Boolean);
 			var catF = null;
@@ -134,6 +150,7 @@ import SearchView from '../components/pages/SearchView';
 			setPager(prev, prevOff, current > 1, link(current - 1));
 			setPager(next, nextOff, current < last, link(current + 1));
 			if (info) info.textContent = current + ' / ' + last;
+			});
 		});
 	})();
 </script>

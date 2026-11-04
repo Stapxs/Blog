@@ -37,7 +37,7 @@ const { title, description, image = FallbackImage } = Astro.props;
         />
         <script is:inline>
             (function () {
-                // 首次加载标记 boot 序列（在首屏渲染前隐藏分级元素）
+                // 首次加载标记 boot 序列
                 if (
                     !window.__bootPlayed &&
                     !window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -47,7 +47,6 @@ const { title, description, image = FallbackImage } = Astro.props;
                     document.documentElement.classList.add("boot");
                 }
 
-                // Apply the saved theme before first paint; re-apply after ClientRouter swaps.
                 (function () {
                     var apply = function () {
                         document.documentElement.dataset.theme =
@@ -56,7 +55,6 @@ const { title, description, image = FallbackImage } = Astro.props;
                     apply();
                     document.addEventListener("astro:after-swap", apply);
 
-                    // Theme toggle with a ripple (View Transitions + clip-path circle).
                     document.addEventListener("click", function (e) {
                         var btn = e.target.closest("#theme-toggle");
                         if (!btn) return;
@@ -145,8 +143,6 @@ const { title, description, image = FallbackImage } = Astro.props;
                             return [x.toFixed(1), y.toFixed(1)];
                         });
 
-                        // Suppress the default cross-fade only for this transition,
-                        // so ClientRouter's page-navigation fade stays untouched.
                         root.classList.add("theme-rippling");
                         var transition =
                             document.startViewTransition(applyTheme);
@@ -179,7 +175,6 @@ const { title, description, image = FallbackImage } = Astro.props;
                 })();
             })();
 
-            // Search panel toggle（document 级委托，换页后依然有效；面板每次重新查询）
             (function () {
                 // 打字机 placeholder：每次面板打开时逐字打出「输入关键词…」
                 var PLACEHOLDER = "输入关键词…";
@@ -501,6 +496,25 @@ const { title, description, image = FallbackImage } = Astro.props;
                 });
             };
 
+            // ========== 分页指示器（data-boot="static"）==========
+            // 旧内容退场开始时【直接隐藏】；新内容入场时【淡入】
+            const PAG_FADE = 250;
+            const fadePagers = (direction: "out" | "in") => {
+                document
+                    .querySelectorAll<HTMLElement>('main [data-boot="static"]')
+                    .forEach((el) => {
+                        if (direction === "out") {
+                            el.style.visibility = "hidden";
+                        } else {
+                            el.style.visibility = "visible";
+                            el.animate(
+                                [{ opacity: "0" }, { opacity: "1" }],
+                                { duration: PAG_FADE, easing: "ease" },
+                            );
+                        }
+                    });
+            };
+
             const restPairs: Array<{ host: HTMLElement; real: HTMLElement }> =
                 [];
 
@@ -558,6 +572,8 @@ const { title, description, image = FallbackImage } = Astro.props;
                 } else {
                     restPairs.push({ host, real });
                     exitGhost(ghost);
+                    // 旧内容退场开始 → 指示器直接隐藏（不参与退场）
+                    fadePagers("out");
                 }
             });
 
@@ -593,6 +609,8 @@ const { title, description, image = FallbackImage } = Astro.props;
                     .forEach((el) => {
                         if (el.style.visibility === "hidden") reveal(el);
                     });
+                // 新内容入场 → 分页指示器同步淡入
+                fadePagers("in");
                 // 新内容出现的同时开始容器高度过渡（与入场动画同步）
                 heightMorph?.();
                 heightMorph = null;

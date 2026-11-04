@@ -28,7 +28,6 @@
 	opacity: 0.6;
 }
 
-/* 正文内容区（含大标题与信息行），嵌一块"屏幕"背景 */
 .content {
 	padding: 1.5em 1.5em 1em;
 	margin-top: 1.5em;

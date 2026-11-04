@@ -16,7 +16,6 @@ interface Props {
  * 分类 / 标签总览页：ls | awk | sort | uniq -c 管线风格，
  * 点击跳转搜索页按字段筛选。
  *
- * 命令行彩蛋的语义是严谨的（在真实 shell 里就是这么得到这页数据的）：
  *   ls -al                       列出 archives/ 下全部条目
  *   awk 'NR>1 {print $N}'        跳过 total 行，取第 N 列
  *   sort | uniq -c               排序 + 计数去重（输出 "  3 生活"）

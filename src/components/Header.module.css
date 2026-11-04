@@ -52,7 +52,6 @@
 	border-bottom-color: var(--accent);
 }
 
-/* Social icons: stay on the title row, right-aligned. */
 .socialLinks {
 	padding: 50px 0;
 	order: 2;
@@ -64,7 +63,6 @@
 	align-items: center;
 }
 
-/* 图标按钮（主题切换 / 搜索）：与社交图标同一形态 */
 .iconButton {
 	display: flex;
 	align-items: center;

@@ -4,7 +4,6 @@ import styles from './BlogIndex.module.css';
 /**
  * 搜索结果页静态壳：结构与列表页同构。
  * 行数据由客户端脚本克隆 [data-search-template] 填充
- * （复用 BlogIndex.module.css，类名哈希与列表页完全一致）。
  */
 export default function SearchView() {
 	return (
@@ -28,7 +27,7 @@ export default function SearchView() {
 					</a>
 				</li>
 			</ul>
-			<nav className={styles.pagination} data-boot="rest" data-search-pagination>
+			<nav className={styles.pagination} data-boot="static" data-search-pagination>
 				<a data-search-prev href="#" hidden>
 					← prev
 				</a>

@@ -3,9 +3,8 @@ import styles from './HeaderLink.module.css';
 
 interface Props extends AnchorHTMLAttributes<HTMLAnchorElement> {
 	href: string;
-	/** Current page pathname; used to derive the active state (server-rendered). */
 	currentPath?: string;
-	/** 不可点击的装饰项（如 "."） */
+	/** 不可点击的装饰项 */
 	disabled?: boolean;
 	children: ReactNode;
 }

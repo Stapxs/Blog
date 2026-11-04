@@ -66,18 +66,19 @@
 
 /* ============ 首次加载编排（boot 序列） ============ */
 /* html.boot 由 head 内联脚本在首屏渲染前添加；
- * 无 JS / 减弱动效 / 序列结束时移除，一切照常显示。 */
-html.boot [data-boot] {
+ * 无 JS / 减弱动效 / 序列结束时移除，一切照常显示。
+ * data-boot="static" = 不参与动画的元素（如分页器），boot 期间照常显示 */
+html.boot [data-boot]:not([data-boot='static']) {
 	visibility: hidden;
 	opacity: 0;
 }
 
-html.boot [data-boot].boot-in {
+html.boot [data-boot]:not([data-boot='static']).boot-in {
 	visibility: visible;
 	opacity: 1;
 }
 
-[data-boot] {
+[data-boot]:not([data-boot='static']) {
 	transition: opacity 0.3s ease;
 }
 

@@ -7,7 +7,6 @@
 	text-decoration: underline;
 }
 
-/* 不可点击的装饰项（"."）：弱化显示，无交互 */
 .disabled {
 	color: rgb(var(--gray));
 	cursor: default;

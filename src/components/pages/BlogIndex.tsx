@@ -49,7 +49,7 @@ export default function BlogIndex({ posts, pagination }: Props) {
 					</li>
 				))}
 			</ul>
-			<nav className={styles.pagination} data-boot="rest">
+			<nav className={styles.pagination} data-boot="static">
 				{pagination.prevUrl ? (
 					<a href={pagination.prevUrl}>← prev</a>
 				) : (

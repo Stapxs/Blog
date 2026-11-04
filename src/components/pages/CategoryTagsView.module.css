@@ -12,7 +12,6 @@
 	text-decoration: none;
 }
 
-/* 名称按终端"目录"惯例染蓝，计数弱化 */
 .name {
 	color: var(--blue);
 }

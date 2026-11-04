@@ -21,8 +21,6 @@
 		opacity 0.12s ease;
 }
 
-/* One post per line: <author> <category> <date> <title>
-   Fixed column widths keep everything aligned in the monospace font. */
 .row {
 	position: relative;
 	z-index: 1;
@@ -103,7 +101,6 @@
 }
 
 @media (max-width: 720px) {
-	/* Small screens: let the leading columns take their natural width and wrap. */
 	.row {
 		flex-wrap: wrap;
 		row-gap: 0.2em;
