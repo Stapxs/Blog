@@ -315,9 +315,10 @@ html.music-open main {
 	transform: translateX(calc(1em - (100vw - var(--music-main-w)) / 2));
 }
 
-/* 临时窄屏回退（与 MusicPlayer.module.css 的面板回退同界 1399px）：
- * 剩余宽度不足以分栏 —— main 不再左移，面板悬浮覆盖在 main 右侧 */
-@media (max-width: 1399px) {
+/* 临时窄屏回退（与 MusicPlayer.module.css 的面板回退同界 1419px）：
+ * 视口不足以同时容纳 main(1002) + 350px 面板时不再分栏 ——
+ * main 不再左移，面板悬浮覆盖在 main 右侧 */
+@media (max-width: 1419px) {
 	html.music-open main {
 		transform: none;
 	}

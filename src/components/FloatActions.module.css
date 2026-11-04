@@ -97,8 +97,10 @@
 	outline-color: var(--red);
 }
 
-/* 面板打开期间：按钮保持激活配色（由 Root.astro 脚本切换 html.music-open） */
-:global(html.music-open) .music {
+/* 面板打开、或面板关闭但仍在播放
+ * 按钮保持激活配色 */
+:global(html.music-open) .music,
+.music[data-playing] {
 	border-color: var(--red);
 	color: var(--red);
 }

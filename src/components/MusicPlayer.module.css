@@ -4,7 +4,9 @@
 	position: fixed;
 	top: calc(var(--music-panel-top, 9em) - 20px);
 	bottom: 6em;
-	left: calc(1em + min(var(--content-width) + 2em, 100vw - 2em) + 1.5em);
+	/* 定宽右锚：贴页面右缘留白，main 左移腾出的空间即为面板悬浮区 */
+	left: auto;
+	width: 350px;
 	right: 1.5em;
 	z-index: 150; /* 悬浮于内容之上、搜索面板（200）之下 */
 	box-sizing: border-box;
@@ -14,7 +16,7 @@
 	background: var(--bg);
 	border: 1px solid var(--red);
 	/* 注意不能在这里设 overflow：压线标题（负偏移）会被裁掉，
-	    内容滚动放在 .body 上 */
+	    内容滚动放在 .playlist 上 */
 	/* 关闭态：整个移出右缘之外，且不可见、不占焦点 */
 	visibility: hidden;
 	transform: translateX(calc(100% + 1.5em));
@@ -28,7 +30,7 @@
 	transform: none;
 }
 
-/* 标题压上边框居中（与搜索面板 .search-title 完全同款），音乐用红色 */
+/* 标题压上边框居中 */
 .title {
 	position: absolute;
 	top: -0.6em;
@@ -41,77 +43,140 @@
 	color: var(--red);
 }
 
-/* 占位内容：播放器本体（控件/播放列表）后续迭代。
-   面板的滚动容器（min-height: 0 让 flex 子项可以收缩滚动） */
-.body {
-	flex: 1;
-	min-height: 0;
+/* ============ 播放器本体（musicforprogramming.net 复刻） ============ */
+
+.player {
+	user-select: none;
+	-webkit-user-select: none;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	gap: 1.2em;
-	overflow-y: auto;
+}
+
+.sp,
+.ticker {
+	display: block;
+	white-space: pre;
+}
+
+.spFuschia {
+	color: var(--pink);
+}
+
+.spOrange {
+	color: var(--orange);
+}
+
+.spYellow {
+	color: var(--yellow);
+}
+
+.spGreen {
+	color: var(--green);
+}
+
+.ticker,
+.time,
+.vol {
 	color: rgb(var(--gray));
 }
 
-.hint {
+.time,
+.vol {
+	white-space: pre; /* 音量 "70 %" 的补位空格 */
+}
+
+/* 控件行拉满面板内容宽：传输控制（5 键）分散对齐；
+   时间码与音量组左右两端对齐 */
+.row {
+	align-self: stretch;
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-top: 0.4em;
+}
+
+/* 音量组：[v-] 音量 [v+] 保持成组（原站的紧邻间距） */
+.volgroup {
+	display: flex;
+	align-items: baseline;
+	gap: 0.55ch;
+}
+
+/* data-colour 由脚本按状态切换（对应原站 green/purple/grey 色类）；
+   --c 供 hover 衬底取色 */
+.btn {
+	background: none;
+	border: none;
+	font: inherit;
+	padding: 0;
+	color: inherit;
+	cursor: pointer;
+	white-space: pre;
+}
+
+.btn:disabled {
+	cursor: default;
+}
+
+.btn[data-colour='grey'] {
+	color: rgb(var(--gray));
+	--c: rgb(var(--gray));
+}
+
+.btn[data-colour='green'] {
+	color: var(--green);
+	--c: var(--green);
+}
+
+.btn[data-colour='purple'] {
+	color: var(--purple);
+	--c: var(--purple);
+}
+
+.btn:not(:disabled):hover {
+	color: rgb(var(--black));
+	background: var(--c);
+	box-shadow:
+		0.4ch 0 0 0 var(--c),
+		-0.3ch 0 0 0 var(--c),
+		0.4ch 0.2ch 0 0 var(--c),
+		-0.3ch 0.2ch 0 0 var(--c);
+	opacity: 0.8;
+}
+
+.btn:focus-visible {
+	outline: 1px solid var(--c);
+	outline-offset: 2px;
+}
+
+/* ============ 播放列表 ============ */
+.playlist {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow-y: auto;
+	margin-top: 1em;
+	padding-top: 1em;
+	border-top: 1px solid var(--line);
+}
+
+.empty {
 	margin: 0;
+	color: rgb(var(--gray));
 	font-size: 0.9em;
 }
 
-/* 占位动画：像素风均衡器（施工中指示） */
-.eq {
-	display: flex;
-	align-items: flex-end;
-	gap: 0.4em;
-	height: 2em;
-}
-
-.eq span {
-	width: 0.35em;
-	background: var(--red);
-	animation: music-eq 0.9s ease-in-out infinite alternate;
-}
-
-.eq span:nth-child(2) {
-	animation-delay: 0.2s;
-}
-
-.eq span:nth-child(3) {
-	animation-delay: 0.4s;
-}
-
-.eq span:nth-child(4) {
-	animation-delay: 0.1s;
-}
-
-@keyframes music-eq {
-	from {
-		height: 25%;
-	}
-	to {
-		height: 100%;
-	}
-}
-
-/* 临时窄屏回退（与 global.css 中 main 左移的回退同界 1399px）：
- * 剩余宽度不足以成栏时不再分栏 —— main 不动，面板定宽悬浮覆盖在 main 右侧。
- * 手机端布局后续统一优化。 */
-@media (max-width: 1399px) {
+@media (max-width: 1419px) {
 	.panel {
-		left: auto;
-		width: min(420px, calc(100vw - 2em));
+		width: min(350px, calc(100vw - 3em));
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.panel {
 		transition: none;
-	}
-
-	.eq span {
-		animation: none;
-		height: 60%;
 	}
 }

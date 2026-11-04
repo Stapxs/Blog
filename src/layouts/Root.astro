@@ -357,9 +357,6 @@ const { title, description, image = FallbackImage, backToTop = false } =
                 />
             </div>
         </div>
-        {/* 音乐播放器面板：打开时 main 左移腾位、本面板从右缘滑入悬浮占满剩余宽度
-            （顶端对齐 main 顶端、底端避让右下角悬浮按钮区；开关逻辑见 head 内联脚本）。
-            transition:persist：切页时整棵子树原样保留 —— 面板状态与未来的音频播放不随导航中断 */}
         <div
             class={musicStyles.panel}
             id="music-panel"
@@ -368,14 +365,86 @@ const { title, description, image = FallbackImage, backToTop = false } =
             aria-label="音乐播放器"
         >
             <span class={musicStyles.title}>音乐</span>
-            <div class={musicStyles.body}>
-                <div class={musicStyles.eq} aria-hidden="true">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
+            {/* 播放器本体：id=music-* 的节点跨页持久（transition:persist），脚本监听器无需重挂 */}
+            <div class={musicStyles.player} id="music-player">
+                <span
+                    class={`${musicStyles.sp} ${musicStyles.spFuschia}`}
+                    id="music-sp1"
+                />
+                <span
+                    class={`${musicStyles.sp} ${musicStyles.spOrange}`}
+                    id="music-sp2"
+                />
+                <span
+                    class={`${musicStyles.sp} ${musicStyles.spYellow}`}
+                    id="music-sp3"
+                />
+                <span
+                    class={`${musicStyles.sp} ${musicStyles.spGreen}`}
+                    id="music-sp4"
+                >
+                    __________________________________
+                </span>
+                <span class={musicStyles.ticker} id="music-ticker" />
+                <div class={musicStyles.row}>
+                    <button
+                        type="button"
+                        class={musicStyles.btn}
+                        id="music-prev"
+                        data-colour="grey"
+                    />
+                    <button
+                        type="button"
+                        class={musicStyles.btn}
+                        id="music-b30"
+                        data-colour="grey"
+                    />
+                    <button
+                        type="button"
+                        class={musicStyles.btn}
+                        id="music-stop"
+                        data-colour="grey"
+                    />
+                    <button
+                        type="button"
+                        class={musicStyles.btn}
+                        id="music-f30"
+                        data-colour="grey"
+                    />
+                    <button
+                        type="button"
+                        class={musicStyles.btn}
+                        id="music-next"
+                        data-colour="grey"
+                    />
                 </div>
-                <p class={musicStyles.hint}>播放器施工中 …</p>
+                <div class={musicStyles.row}>
+                    <span class={musicStyles.time} id="music-time">
+                        --:--:--
+                    </span>
+                    {/* 音量组：[v-] 音量 [v+] 成组靠右（与时间码左右对齐） */}
+                    <div class={musicStyles.volgroup}>
+                        <button
+                            type="button"
+                            class={musicStyles.btn}
+                            id="music-vminus"
+                            data-colour="grey"
+                        />
+                        <span class={musicStyles.vol} id="music-vol">
+                            ....
+                        </span>
+                        <button
+                            type="button"
+                            class={musicStyles.btn}
+                            id="music-vplus"
+                            data-colour="grey"
+                        />
+                    </div>
+                </div>
+            </div>
+            {/* 播放列表：滚动区，内容获取/解析后续接入 */}
+            <div class={musicStyles.playlist} id="music-playlist">
+                <p class={musicStyles.empty}>播放列表为空</p>
             </div>
         </div>
         <slot />
@@ -388,6 +457,7 @@ const { title, description, image = FallbackImage, backToTop = false } =
     {/* 首次加载 boot 序列 + 页面切换编排（模块脚本只执行一次） */}
     <script>
         import { blankNode, play } from "../scripts/scramble";
+        import { initMusicPlayer } from "../scripts/musicPlayer";
 
         const html = document.documentElement;
         const MOTION_OK = () =>
@@ -832,5 +902,11 @@ const { title, description, image = FallbackImage, backToTop = false } =
             updateTopProgress();
         });
         updateTopProgress();
+
+        /* ================= 音乐播放器 =================
+         * musicforprogramming.net 复刻（音频图/频谱/状态机见 scripts/musicPlayer.ts）。
+         * 面板 DOM 带 transition:persist 跨页持久，音频播放不随导航中断；
+         * 模块脚本只执行一次，这里的初始化也只需跑一次 */
+        initMusicPlayer();
     </script>
 </html>
