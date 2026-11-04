@@ -1,39 +1,194 @@
 ---
-import BlogPostView from "../components/pages/BlogPostView";
+import AboutView from "../components/pages/AboutView";
 import Root from "../layouts/Root.astro";
-import { formatDateLocal } from "../scripts/datetime";
+import { SITE_TITLE } from "../consts";
 ---
 
-<Root title="About Me" description="Lorem ipsum dolor sit amet">
-    <BlogPostView
-        location="About"
-        title="About Me"
-        pubDate={formatDateLocal(new Date("August 08 2021"))}
-    >
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae
-            ultricies leo integer malesuada nunc vel risus commodo viverra.
-            Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi
-            quis eleifend quam adipiscing. In hac habitasse platea dictumst
-            vestibulum. Sagittis purus sit amet volutpat. Netus et malesuada
-            fames ac turpis egestas. Eget magna fermentum iaculis eu non diam
-            pharetra vestibulum lorem. Varius sit amet mattis vulputate enim.
-            Habitasse platea dictumst quisque sagittis. Integer quis auctor elit
-            sed vulputate mi. Dictumst quisque sagittis purus sit amet.
-        </p>
-        <p>
-            Morbi tristique senectus et netus. Id semper risus in hendrerit
-            gravida rutrum quisque non tellus. Habitasse platea dictumst quisque
-            sagittis purus sit amet. Tellus molestie nunc non blandit massa.
-            Cursus vitae congue mauris rhoncus accumsan tortor posuere ac ut.
-            Fringilla urna porttitor rhoncus dolor. Elit ullamcorper dignissim
-            cras tincidunt lobortis. In cursus turpis massa tincidunt dui ut
-            ornare lectus. Integer feugiat scelerisque varius morbi enim nunc.
-            Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu
-            dui vivamus arcu felis bibendum. Dignissim suspendisse in est ante
-            in nibh mauris. Sed tempus urna et pharetra pharetra massa massa
-            ultricies mi.
-        </p>
-    </BlogPostView>
+<Root title={`关于 | ${SITE_TITLE}`} description="啊吧啊吧，这是 SS！">
+    <AboutView />
+    <script>
+    /* 小槐在做什么：并行拉取 Home Assistant 前台应用 + Steam 状态，
+     * 组合成「小槐正在使用 X（HH:MM），Steam 在线，正在玩/什么都没玩儿」。
+     * 两路互不拖累（allSettled，失败沿用上次结果），组合文本去重后
+     * 覆盖静态兜底文案并做解密打字机。
+     * 刷新由倒计时驱动：#about-refresh 每秒 -1，到 0 触发刷新并回到 30。
+     * 模块脚本跨切页只执行一次 —— 立即执行 + astro:after-swap 重入
+     * 两个入口都过 loadHello（1s 防抖避免同一次切页的脚本执行与
+     * after-swap 双触发造成重复请求） */
+    import { play } from "../scripts/scramble";
+
+    const HELLO_API =
+        "https://api.stapxs.cn/inner/home/sensor.lin_xiao_huai_de_macbook_pro_frontmost_app";
+    const STEAM_API = "https://api.stapxs.cn/steam/status";
+    const REFRESH_S = 30;
+
+    let lastRun = 0;
+    let lastState = "";
+    /* 两段内容的缓存：某一路失败时沿用上次结果 */
+    let appPart: { state: string; time: string } | null = null;
+    let steamPart: { online: boolean; game: string | null } | null = null;
+
+    async function loadHello() {
+        const el = document.querySelector<HTMLElement>(
+            "#about-hello [data-hello-text]",
+        );
+        if (!el) return;
+        if (Date.now() - lastRun < 1000) return;
+        lastRun = Date.now();
+        /* 请求在路上：倒计时显示 "--" 且暂停（首刷错位问题的根源
+         * 就是首刷未回来时倒计时已经在跑） */
+        loading = true;
+        renderCountdown();
+
+        const [ha, steam] = await Promise.allSettled([
+            fetch(HELLO_API, { signal: AbortSignal.timeout(10_000) }).then(
+                (r) => r.json(),
+            ),
+            fetch(STEAM_API, { signal: AbortSignal.timeout(10_000) }).then(
+                (r) => r.json(),
+            ),
+        ]);
+
+        if (ha.status === "fulfilled" && ha.value?.state) {
+            /* last_updated 是 UTC ISO 串，转本地时间只取时分 */
+            const t = new Date(ha.value.last_updated);
+            const hh = String(t.getHours()).padStart(2, "0");
+            const mm = String(t.getMinutes()).padStart(2, "0");
+            appPart = { state: ha.value.state, time: `${hh}:${mm}` };
+        }
+        if (steam.status === "fulfilled" && steam.value?.data) {
+            /* personastate 0 = 不在线，其余按在线；游戏字段仅游玩时有 */
+            const d = steam.value.data;
+            steamPart = {
+                online: d.personastate !== 0,
+                game: d.gameextrainfo ?? null,
+            };
+        }
+        /* 请求落地（成功/失败皆算）：退出 loading、倒数重新从 30 起 ——
+         * 放在去重之前，内容没变下一轮倒计时也要重新开始 */
+        loading = false;
+        countdown = REFRESH_S;
+        renderCountdown();
+
+        if (!appPart && !steamPart) return;
+
+        /* 去重：组合文本没变不打字机 */
+        const plain = `${
+            appPart ? `小槐正在使用 ${appPart.state}（${appPart.time}）` : ""
+        }${
+            steamPart
+                ? `${appPart ? "，" : ""}Steam ${
+                      steamPart.online ? "在线" : "不在线"
+                  }，${
+                      steamPart.game
+                          ? `正在玩 ${steamPart.game}`
+                          : "但是什么都没玩儿"
+                  }`
+                : ""
+        }`;
+        if (plain === lastState) return;
+        lastState = plain;
+
+        /* 渲染：时间/离线/摸鱼态灰色，在线染绿，应用/游戏名染黄 */
+        const colorSpan = (
+            text: string,
+            color: string,
+            small = false,
+        ) => {
+            const s = document.createElement("span");
+            s.textContent = text;
+            s.style.color = color;
+            if (small) s.style.fontSize = "0.85em";
+            return s;
+        };
+        const graySpan = (text: string, small = false) =>
+            colorSpan(text, "rgb(var(--gray))", small);
+        const yellowSpan = (text: string) =>
+            colorSpan(text, "var(--yellow)");
+        el.replaceChildren();
+        if (appPart) {
+            el.append("小槐正在使用 ");
+            el.append(yellowSpan(appPart.state));
+            el.append(" ");
+            el.append(graySpan(`（${appPart.time}）`, true));
+        }
+        if (steamPart) {
+            el.append(`${appPart ? "，" : ""}Steam `);
+            if (steamPart.online) {
+                const s = document.createElement("span");
+                s.textContent = "在线";
+                s.style.color = "var(--green)";
+                el.append(s);
+            } else {
+                el.append(graySpan("不在线"));
+            }
+            if (steamPart.game) {
+                el.append("，正在玩 ");
+                el.append(yellowSpan(steamPart.game));
+            } else {
+                el.append("，");
+                el.append(graySpan("但是什么都没玩儿"));
+            }
+        }
+
+        /* 与标题（data-boot="pagetitle"）同款解密打字机 */
+        if (
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        )
+            play(el, { duration: 800 });
+    }
+
+    /* ============ 刷新倒计时（也承担轮询调度） ============
+     * loading = 有请求在路上（含首刷）：显示 "--" 且倒数暂停，
+     * 请求落地后由 loadHello 重置为 30 重新倒数 —— 保证倒计时
+     * 永远从「数据实际到手」的时刻起算，不与请求耗时错位 */
+    let countdown = REFRESH_S;
+    let loading = false;
+    let secTimer: number | undefined;
+
+    const renderCountdown = () => {
+        const cd = document.getElementById("about-refresh");
+        if (cd) cd.textContent = loading ? "--" : `${countdown}s`;
+    };
+
+    function stopTimer() {
+        if (secTimer === undefined) return;
+        window.clearInterval(secTimer);
+        secTimer = undefined;
+    }
+
+    function startTimer() {
+        if (secTimer !== undefined) return;
+        renderCountdown();
+        secTimer = window.setInterval(() => {
+            if (!document.querySelector("#about-hello")) {
+                stopTimer();
+                return;
+            }
+            if (loading) return; // 请求在路上：本秒跳过（耗时计入间隔）
+            countdown--;
+            if (countdown <= 0) {
+                void loadHello(); // 到 0 触发，loading 态接管
+            } else {
+                renderCountdown();
+            }
+        }, 1000);
+    }
+
+    startTimer();
+    void loadHello();
+
+    /* 切页重入：元素全新（服务端兜底文案），lastState 要重置，
+     * 否则应用没变时会被去重跳过、兜底文案一直留着 */
+    document.addEventListener("astro:after-swap", () => {
+        if (!document.querySelector("#about-hello")) {
+            stopTimer();
+            return;
+        }
+        lastState = "";
+        renderCountdown();
+        void loadHello();
+        startTimer();
+    });
+</script>
 </Root>

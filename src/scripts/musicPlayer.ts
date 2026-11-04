@@ -451,9 +451,28 @@ async function loadPlaylist() {
         markCurrentRow();
         setState("paused");
     } catch {
-        const msg = box.querySelector("p");
-        if (msg) msg.textContent = "播放列表加载失败";
+        /* 失败：提示 + 重试按钮（再来一次 loadPlaylist） */
+        renderPlaylistError(box);
     }
+}
+
+/* 失败态：提示文案 + [retry] 按钮（终端按钮风，样式见 CSS 模块） */
+function renderPlaylistError(box: HTMLElement) {
+    box.replaceChildren();
+    const msg = document.createElement("p");
+    msg.dataset.error = "";
+    msg.textContent = "播放列表加载失败";
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.dataset.retry = "";
+    retry.textContent = "[retry]";
+    retry.addEventListener("click", () => {
+        retry.disabled = true;
+        msg.textContent = "正在重试 …";
+        void loadPlaylist();
+    });
+    msg.append(" ", retry);
+    box.append(msg);
 }
 
 function renderPlaylist(box: HTMLElement, tracks: PlaylistTrack[]) {

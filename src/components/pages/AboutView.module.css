@@ -1,0 +1,214 @@
+/* 关于页：终端风（whoami / ls ~/devices / cat ~/tech-stack） */
+
+/* ===== 身份卡 ===== */
+.card {
+	display: flex;
+	align-items: center;
+	gap: 1.2em;
+	padding: 1em;
+	border: 1px solid var(--line);
+}
+
+.avatar {
+	flex: none;
+	width: 4.8em;
+	height: 4.8em;
+	box-sizing: border-box;
+	border: 1px solid var(--line);
+}
+
+.profile {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.3em;
+}
+
+.nameRow {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 0.6em;
+}
+
+.name {
+	color: rgb(var(--black));
+	font-size: 1.2em;
+}
+
+.sign {
+	color: rgb(var(--gray));
+}
+
+.mailRow {
+	display: flex;
+	align-items: baseline;
+	gap: 0.6em;
+	min-width: 0;
+	flex-wrap: wrap;
+}
+
+.mailRow a {
+	overflow-wrap: anywhere;
+}
+
+.socialRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6em;
+	margin-top: 0.2em;
+}
+
+/* ===== 段落命令行 ===== */
+.cmdline {
+	margin-top: 2em;
+	white-space: pre-wrap;
+}
+
+.comment {
+	color: rgb(var(--gray));
+	font-size: 0.85em;
+}
+
+/* ===== 小槐在做什么 ===== */
+.hello {
+	margin-top: 0.4em;
+	padding: 0.6em 1em;
+	border-left: 3px solid var(--accent);
+	color: var(--fg);
+}
+
+/* 刷新倒计时：wall 行尾灰色小字，脚本每秒更新（30s → 0s 触发刷新）。
+   定宽 3ch 避免 30s→9s 时行宽抖动（像素字体等宽） */
+.refresh {
+	display: inline-block;
+	width: 3ch;
+	margin-left: 0.6em;
+	text-align: right;
+	color: rgb(var(--gray));
+	font-size: 0.85em;
+}
+
+/* ===== 关于本站 ===== */
+.textfile {
+	margin-top: 0.4em;
+	padding: 0.6em 1em;
+	border-left: 3px solid var(--accent);
+	color: rgb(var(--gray));
+}
+
+/* ===== 站点历史（单行紧凑，年份分隔） ===== */
+.history {
+	margin-top: 0.8em;
+	border-left: 1px solid rgb(var(--gray-light));
+	margin-left: 1.4em;
+	padding-left: 1.2em;
+	padding-bottom: 0.4em;
+}
+
+/* 年份标签：贴在主干上的目录名（背景盖住竖线） */
+.historyYearLabel {
+	position: relative;
+	left: -1.2em;
+	display: inline-block;
+	background: var(--bg);
+	padding-right: 0.6em;
+	color: rgb(var(--black));
+	font-weight: bold;
+	margin: 0.2em 0;
+}
+
+/* 跨年分组之间额外空一拍 */
+.historyBreak {
+	margin-top: 0.6em;
+}
+
+/* 单行条目：日期列 + 内容同行 */
+.historyRow {
+	display: flex;
+	align-items: baseline;
+	gap: 0.8em;
+	padding: 0.1em 0;
+}
+
+.historyDateLabel {
+	flex: none;
+	white-space: nowrap;
+	color: var(--blue);
+}
+
+.historyText {
+	min-width: 0;
+	color: var(--fg);
+	line-height: 1.5;
+}
+
+.historyEnd {
+	margin-top: 0.2em;
+	color: rgb(var(--gray));
+}
+
+/* ===== 设备清单 ===== */
+.devices {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16em, 1fr));
+	gap: 0.35em 1.5em;
+	margin-top: 0.8em;
+}
+
+.device {
+	display: flex;
+	align-items: center;
+	gap: 0.6em;
+	min-width: 0;
+}
+
+/* 彩色像素方块（--c 由内联指定，取站内调色板） */
+.dot {
+	flex: none;
+	width: 0.6em;
+	height: 0.6em;
+	background: var(--c, var(--fg));
+}
+
+.note {
+	color: rgb(var(--gray));
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* ===== 技术栈 ===== */
+.stack {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35em;
+	margin-top: 0.8em;
+}
+
+.stackRow {
+	display: flex;
+	align-items: baseline;
+	gap: 0.7em;
+	flex-wrap: wrap;
+}
+
+/* 定宽列：对齐出表格感（窄屏放不下时换行） */
+.col {
+	flex: 0 0 auto;
+	min-width: 0;
+}
+
+.stackRow .cmd-name {
+	width: 10ch;
+}
+
+.stackRow .cmd-flag {
+	width: 12ch;
+}
+
+.sep {
+	color: rgb(var(--gray));
+	user-select: none;
+}

@@ -184,6 +184,43 @@
 	font-size: 0.9em;
 }
 
+/* 加载失败态：提示 + [retry] 重试按钮（musicPlayer.ts 渲染） */
+.playlist [data-error] {
+	margin: auto;
+	color: rgb(var(--gray));
+	font-size: 0.9em;
+}
+
+.playlist [data-retry] {
+	background: none;
+	border: none;
+	font: inherit;
+	color: var(--green);
+	cursor: pointer;
+	white-space: pre;
+	padding: 0;
+}
+
+.playlist [data-retry]:hover {
+	color: #fff;
+	background: var(--green);
+	box-shadow:
+		0.4ch 0 0 0 var(--green),
+		-0.3ch 0 0 0 var(--green);
+}
+
+.playlist [data-retry]:focus-visible {
+	outline: 1px solid var(--green);
+	outline-offset: 2px;
+}
+
+.playlist [data-retry]:disabled {
+	color: rgb(var(--gray));
+	cursor: default;
+	background: none;
+	box-shadow: none;
+}
+
 .playlist [data-track] {
 	position: relative;
 	z-index: 1;

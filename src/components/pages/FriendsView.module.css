@@ -1,0 +1,102 @@
+/* 友链页：卡片网格 + 终端 README */
+
+/* ===== 友链卡片网格 ===== */
+.grid {
+	display: grid;
+	/* 卡片定宽换行：宽屏三列、中屏两列，窄屏单列 */
+	grid-template-columns: repeat(auto-fill, minmax(16em, 1fr));
+	gap: 1em;
+}
+
+.card {
+	display: flex;
+	align-items: center;
+	gap: 0.8em;
+	min-width: 0;
+	padding: 0.8em;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	color: inherit;
+	text-decoration: none;
+}
+
+.card:hover {
+	border-color: var(--accent);
+	color: inherit;
+}
+
+.card:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.avatar {
+	flex: none;
+	width: 3.2em;
+	height: 3.2em;
+	box-sizing: border-box;
+	border: 1px solid var(--line);
+	object-fit: cover;
+}
+
+.info {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2em;
+}
+
+.name {
+	color: rgb(var(--black));
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.desc {
+	color: rgb(var(--gray));
+	font-size: 0.85em;
+	line-height: 1.45;
+	/* 两行截断 */
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+}
+
+/* ===== 段落命令行 ===== */
+.cmdline {
+	margin-top: 2em;
+}
+
+/* ===== README 块 ===== */
+.readme {
+	margin-top: 0.8em;
+	padding: 0.6em 1em;
+	border-left: 3px solid var(--accent);
+}
+
+.readme p {
+	margin: 0 0 0.6em;
+}
+
+.readme .comment {
+	color: rgb(var(--gray));
+	font-size: 0.85em;
+	margin-bottom: 0;
+}
+
+/* 跳转 .env 的链接：终端风「文件」造型 */
+.envLink {
+	padding: 0.1em 0.4em;
+	background: rgb(var(--gray-light));
+	border: 1px solid var(--line);
+	color: rgb(var(--black));
+	text-decoration: none;
+}
+
+.envLink:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}

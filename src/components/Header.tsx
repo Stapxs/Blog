@@ -34,6 +34,9 @@ export default function Header({ siteTitle, currentPath }: Props) {
 					<HeaderLink href="/tags" currentPath={currentPath}>
 						./Tags
 					</HeaderLink>
+					<HeaderLink href="/friends" currentPath={currentPath}>
+						./Friends
+					</HeaderLink>
 					<HeaderLink href="/about" currentPath={currentPath}>
 						./About
 					</HeaderLink>
