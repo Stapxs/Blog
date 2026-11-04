@@ -4,20 +4,16 @@
 	position: fixed;
 	top: calc(var(--music-panel-top, 9em) - 20px);
 	bottom: 6em;
-	/* 定宽右锚：贴页面右缘留白，main 左移腾出的空间即为面板悬浮区 */
 	left: auto;
 	width: 350px;
 	right: 1.5em;
-	z-index: 150; /* 悬浮于内容之上、搜索面板（200）之下 */
+	z-index: 150;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
 	padding: 1.5em;
 	background: var(--bg);
 	border: 1px solid var(--red);
-	/* 注意不能在这里设 overflow：压线标题（负偏移）会被裁掉，
-	    内容滚动放在 .playlist 上 */
-	/* 关闭态：整个移出右缘之外，且不可见、不占焦点 */
 	visibility: hidden;
 	transform: translateX(calc(100% + 1.5em));
 	transition:
@@ -43,7 +39,7 @@
 	color: var(--red);
 }
 
-/* ============ 播放器本体（musicforprogramming.net 复刻） ============ */
+/* ============ 播放器本体 ============ */
 
 .player {
 	user-select: none;
@@ -53,10 +49,15 @@
 	align-items: center;
 }
 
+/* 32 列定宽字符窗口：全角 CJK（1em）比半角字符（0.5em）宽一倍，
+   中文标题的窗口实际渲染可远超面板宽 —— 以容器为上限、右缘截断。
+   跑马灯窗口本身在滚动，截断不影响内容完整展示 */
 .sp,
 .ticker {
 	display: block;
 	white-space: pre;
+	max-width: 100%;
+	overflow: hidden;
 }
 
 .spFuschia {
@@ -103,8 +104,6 @@
 	gap: 0.55ch;
 }
 
-/* data-colour 由脚本按状态切换（对应原站 green/purple/grey 色类）；
-   --c 供 hover 衬底取色 */
 .btn {
 	background: none;
 	border: none;
@@ -135,14 +134,13 @@
 }
 
 .btn:not(:disabled):hover {
-	color: rgb(var(--black));
+	color: #fff;
 	background: var(--c);
 	box-shadow:
 		0.4ch 0 0 0 var(--c),
 		-0.3ch 0 0 0 var(--c),
 		0.4ch 0.2ch 0 0 var(--c),
 		-0.3ch 0.2ch 0 0 var(--c);
-	opacity: 0.8;
 }
 
 .btn:focus-visible {
@@ -152,21 +150,101 @@
 
 /* ============ 播放列表 ============ */
 .playlist {
+	position: relative;
 	flex: 1;
 	min-height: 0;
 	display: flex;
-	align-items: center;
-	justify-content: center;
+	flex-direction: column;
 	overflow-y: auto;
+	overscroll-behavior: contain;
 	margin-top: 1em;
 	padding-top: 1em;
 	border-top: 1px solid var(--line);
 }
 
+.playlist [data-hover-bar] {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 0;
+	pointer-events: none;
+	background: rgb(var(--gray-light));
+	opacity: 0;
+	transition:
+		transform 0.15s ease,
+		height 0.15s ease,
+		opacity 0.12s ease;
+}
+
 .empty {
-	margin: 0;
+	margin: auto;
 	color: rgb(var(--gray));
 	font-size: 0.9em;
+}
+
+.playlist [data-track] {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	gap: 0.6em;
+	padding: 0.3em 0.2em;
+	flex-shrink: 0;
+	/* button 复位 */
+	background: none;
+	border: none;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	width: 100%;
+	cursor: pointer;
+}
+
+.playlist [data-track]:focus-visible {
+	outline: 1px solid var(--green);
+	outline-offset: -1px;
+}
+
+.playlist [data-current] {
+	background: var(--red);
+	color: rgb(var(--black));
+}
+
+.playlist [data-current] [data-cover] {
+	border-color: var(--red);
+}
+
+.playlist [data-current] [data-tns] {
+	color: inherit;
+	opacity: 0.7;
+}
+
+.playlist [data-cover] {
+	flex: none;
+	width: 2em;
+	height: 2em;
+	box-sizing: border-box;
+	border: 1px solid var(--line);
+	background-color: rgb(var(--gray-light));
+	background-position: center;
+	background-size: cover;
+}
+
+/* 曲名行：单行超长省略 */
+.playlist [data-label] {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.playlist [data-current] [data-marquee] [data-text] {
+	display: inline-block;
+}
+
+.playlist [data-tns] {
+	color: rgb(var(--gray));
 }
 
 @media (max-width: 1419px) {

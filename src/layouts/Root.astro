@@ -442,14 +442,15 @@ const { title, description, image = FallbackImage, backToTop = false } =
                     </div>
                 </div>
             </div>
-            {/* 播放列表：滚动区，内容获取/解析后续接入 */}
-            <div class={musicStyles.playlist} id="music-playlist">
-                <p class={musicStyles.empty}>播放列表为空</p>
+            <div
+                class={musicStyles.playlist}
+                id="music-playlist"
+                data-hover-list
+            >
+                <p class={musicStyles.empty}>加载中 …</p>
             </div>
         </div>
         <slot />
-        {/* 页面右下角悬浮操作区：main 之后的 body 直接子级
-            （横向贴页面右缘；纵向 sticky，落位与 main 底边缘对齐） */}
         <FloatActions backToTop={backToTop} />
         <Footer />
     </body>
@@ -816,7 +817,7 @@ const { title, description, image = FallbackImage, backToTop = false } =
             const listRect = list.getBoundingClientRect();
             const rowRect = row.getBoundingClientRect();
             bar.style.height = `${rowRect.height}px`;
-            bar.style.transform = `translateY(${rowRect.top - listRect.top}px)`;
+            bar.style.transform = `translateY(${rowRect.top - listRect.top + list.scrollTop}px)`;
             bar.style.opacity = "1";
         };
 
@@ -828,7 +829,7 @@ const { title, description, image = FallbackImage, backToTop = false } =
 
         document.addEventListener("mouseover", (e) => {
             const row = (e.target as HTMLElement).closest<HTMLElement>(
-                "a[data-boot-list-row], [data-hover-list] a",
+                "a[data-boot-list-row], [data-hover-list] a, [data-hover-list] button",
             );
             const list = row?.closest<HTMLElement>("[data-hover-list]");
             if (row && list) {

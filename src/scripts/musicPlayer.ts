@@ -54,6 +54,16 @@ function ensureGraph() {
     srcNode.connect(analyser);
     srcNode.connect(gainNode);
     gainNode.connect(ctx.destination);
+    /* 曲目自然播完 → 自动下一曲（末尾则停在 paused，stop 键可重播） */
+    audioEl.addEventListener("ended", () => {
+        if (state !== "playing") return;
+        const i = playlistTracks.findIndex(
+            (t) => t.id === currentTrack?.id,
+        );
+        const next = playlistTracks[i + 1];
+        if (next) void playTrack(next);
+        else setState("paused");
+    });
 }
 
 function adjustVolume(d: number) {
@@ -67,13 +77,15 @@ function adjustVolume(d: number) {
  *    32 列对数频率轴（bin = floor(c)+col，c 每列 ×1.08 起步），
  *    强度 i = max((freqData[bin]+s)>>3, 0)，s 从 -40 起每列 +1.5。
  *    四条字符阶梯错位 8 格：低强度落在绿行，强度升高逐级到
- *    黄/橙/品红行；字符本身（_.-•:*^º'）再细分十级。
+ *    黄/橙/品红行；字符本身（_.-o:*^º'）再细分十级。
  * ============================================================ */
 
-/* 四条字符阶梯 —— “空格”全部是 NBSP(\xa0)，各 32 字符 */
+/* 四条字符阶梯 —— “空格”全部是 NBSP(\xa0)，各 32 字符。
+ * 原站用 •（U+2022），但 fusion-pixel 里它是全角（1em）会让频谱列错位，
+ * 换成半角的 o（像素圆环，最接近「点」的视觉且等宽） */
 const N = "\u00a0";
 const ramp = (pre: number, post: number) =>
-    N.repeat(pre) + "_.-•:*^º'" + N.repeat(post); // 9 字形 + 23 填充 = 32
+    N.repeat(pre) + "_.-o:*^º'" + N.repeat(post); // 9 字形 + 23 填充 = 32
 const RAMP = [
     ramp(23, 0), // 品红行（最强）：字形区间 [23,31]
     ramp(15, 8), // 橙行：[15,23]
@@ -176,7 +188,7 @@ function renderButtons() {
         b.el.dataset.colour = b.enabled ? b.colour : "grey";
         b.el.disabled = !b.enabled;
     });
-    /* 面板关闭但仍在播放时，悬浮按钮保持激活配色 */
+    /* 悬浮音乐按钮：播放中保持激活配色（data-playing） */
     $("music-toggle")?.toggleAttribute("data-playing", state === "playing");
 }
 
@@ -207,15 +219,15 @@ function setState(next: string) {
     if (next === "playing") {
         audioEl.play();
         startTime();
-        B["music-prev"].label = "prev";
+        B["music-prev"].label = "上一首";
         B["music-prev"].enabled = true;
         B["music-b30"].label = "-30";
         B["music-b30"].enabled = true;
-        B["music-stop"].label = "stop";
+        B["music-stop"].label = "暂停";
         B["music-stop"].enabled = true;
         B["music-f30"].label = "+30";
         B["music-f30"].enabled = true;
-        B["music-next"].label = "next";
+        B["music-next"].label = "下一首";
         B["music-next"].enabled = true;
         B["music-vminus"].label = "v-";
         B["music-vminus"].enabled = true;
@@ -226,10 +238,18 @@ function setState(next: string) {
         setText("music-vol", fmtVolume(v));
     }
     if (next === "paused") {
-        audioEl.pause();
+        audioEl?.pause();
         stopTime();
-        B["music-stop"].label = "play"; // 其余按钮保持原样
+        B["music-stop"].label = "播放";
         B["music-stop"].enabled = true;
+        /* 预选态（歌单加载后自动选中的第一首，尚未装载音频）：
+           prev/next 也可直接点播，stop 即开播 */
+        if (currentTrack) {
+            B["music-prev"].label = "上一首";
+            B["music-prev"].enabled = true;
+            B["music-next"].label = "下一首";
+            B["music-next"].enabled = true;
+        }
     }
     renderButtons();
 }
@@ -246,16 +266,29 @@ function seek(d: number) {
 }
 
 function toggleStop() {
-    setState(state === "playing" ? "paused" : "playing");
+    if (state === "playing") {
+        setState("paused");
+        return;
+    }
+    /* 预选未装载、或上一曲已自然播完 —— 播放链接是一次性的，现取开播 */
+    if (currentTrack && (!audioEl?.src || audioEl?.ended)) {
+        void playTrack(currentTrack);
+        return;
+    }
+    setState("playing");
 }
 
-/* 待播放列表接入：上一曲 / 下一曲 */
-function step(_d: 1 | -1) {
-    /* TODO: 曲目队列切换（播放列表实现后接线） */
+/* 上一曲 / 下一曲：在已加载的歌单里顺移（不循环，到头不动） */
+function step(d: 1 | -1) {
+    if (!currentTrack) return;
+    const i = playlistTracks.findIndex((t) => t.id === currentTrack?.id);
+    const next = playlistTracks[i + d];
+    if (next) void playTrack(next);
 }
 
 /* ============================================================
- * 5. 曲目装载 —— 播放列表（后续实现）的点播入口。
+ * 5. 曲目装载与点播。
+ *    播放链接是一次性的（CDN 签名短时效）—— 每次播放前现取。
  * ============================================================ */
 
 export async function setTrack(title: string, url: string) {
@@ -268,8 +301,181 @@ export async function setTrack(title: string, url: string) {
     setState("playing");
 }
 
+const SONG_URL_API = "https://api.stapxs.cn/music/song/url?id=";
+
+let currentTrack: PlaylistTrack | null = null;
+
+const labelOf = (t: PlaylistTrack) =>
+    `${t.name}${t.tns ? `(${t.tns})` : ""} // ${t.artist}`;
+
+async function playTrack(t: PlaylistTrack) {
+    const player = document.getElementById("music-player");
+    if (player) player.style.opacity = "0.5"; // 取链接中
+    try {
+        const res = await fetch(SONG_URL_API + t.id, {
+            signal: AbortSignal.timeout(10_000),
+        });
+        const data = await res.json();
+        const url: string | undefined = data?.data?.[0]?.url;
+        if (!url) throw new Error("no url");
+        currentTrack = t;
+        markCurrentRow();
+        await setTrack(labelOf(t), url.replace(/^http:/, "https:"));
+    } catch {
+        tickerSrc = "获取播放链接失败，请稍后再试".replaceAll(
+            " ",
+            "\u00a0",
+        );
+        tickerPos = 0;
+    } finally {
+        if (player) player.style.opacity = "1";
+    }
+}
+
+let marqueeAnim: Animation | null = null;
+
+function markCurrentRow() {
+    marqueeAnim?.cancel();
+    marqueeAnim = null;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)")
+        .matches;
+    document
+        .querySelectorAll<HTMLElement>("#music-playlist [data-track]")
+        .forEach((row) => {
+            const isCurrent = Number(row.dataset.id) === currentTrack?.id;
+            row.toggleAttribute("data-current", isCurrent);
+            const label = row.querySelector<HTMLElement>("[data-label]");
+            if (!label) return;
+            const text = row.querySelector<HTMLElement>("[data-text]");
+            if (isCurrent && text && !reduce) {
+                const overflow = label.scrollWidth - label.clientWidth;
+                if (overflow > 1) {
+                    label.dataset.marquee = "";
+                    /* 首尾各停 0.5s，中段约 30px/s 匀速 */
+                    const hold = 1000;
+                    const total = (overflow / 30) * 1000 + hold * 2;
+                    const shift = `translateX(${-overflow}px)`;
+                    marqueeAnim = text.animate(
+                        [
+                            { transform: "translateX(0)", offset: 0 },
+                            {
+                                transform: "translateX(0)",
+                                offset: hold / total,
+                            },
+                            {
+                                transform: shift,
+                                offset: (total - hold) / total,
+                            },
+                            { transform: shift, offset: 1 },
+                        ],
+                        {
+                            duration: total,
+                            iterations: Infinity,
+                            easing: "linear",
+                        },
+                    );
+                }
+            } else {
+                delete label.dataset.marquee;
+            }
+        });
+}
+
 /* ============================================================
- * 6. 启动
+ * 6. 播放列表 —— 网易云音乐歌单
+ * ============================================================ */
+
+const PLAYLIST_API =
+    "https://api.stapxs.cn/music/playlist/detail?id=2175089467&s=0";
+const PLAYLIST_LIMIT = 10;
+
+interface PlaylistTrack {
+    id: number;
+    name: string;
+    tns: string | null;
+    artist: string;
+    cover: string;
+}
+
+interface NcmTrack {
+    id?: number;
+    name?: string;
+    tns?: string[];
+    ar?: Array<{ name?: string }>;
+    al?: { picUrl?: string };
+}
+
+/* 已加载的曲目缓存 */
+let playlistTracks: PlaylistTrack[] = [];
+
+async function loadPlaylist() {
+    const box = document.getElementById("music-playlist");
+    if (!box) return;
+    try {
+        const res = await fetch(PLAYLIST_API, {
+            signal: AbortSignal.timeout(10_000),
+        });
+        const data = await res.json();
+        const tracks: NcmTrack[] = data?.playlist?.tracks ?? [];
+        playlistTracks = tracks.slice(0, PLAYLIST_LIMIT).map((t) => ({
+            id: t.id ?? 0,
+            name: t.name ?? "未知曲目",
+            tns: t.tns?.[0] ?? null,
+            artist: t.ar?.[0]?.name ?? "未知",
+            cover: t.al?.picUrl
+                ? t.al.picUrl.replace(/^http:/, "https:") + "?param=48y48"
+                : "",
+        }));
+        if (playlistTracks.length === 0) throw new Error("empty");
+        renderPlaylist(box, playlistTracks);
+        currentTrack = playlistTracks[0];
+        markCurrentRow();
+        setState("paused");
+    } catch {
+        const msg = box.querySelector("p");
+        if (msg) msg.textContent = "播放列表加载失败";
+    }
+}
+
+function renderPlaylist(box: HTMLElement, tracks: PlaylistTrack[]) {
+    box.replaceChildren();
+    const bar = document.createElement("div");
+    bar.dataset.hoverBar = "";
+    bar.setAttribute("aria-hidden", "true");
+    box.append(bar);
+    tracks.forEach((t) => {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.dataset.track = "";
+        row.dataset.id = String(t.id);
+        row.title = labelOf(t);
+        row.addEventListener("click", () => void playTrack(t));
+
+        const cover = document.createElement("div");
+        cover.dataset.cover = "";
+        if (t.cover) cover.style.backgroundImage = `url("${t.cover}")`;
+
+        const label = document.createElement("span");
+        label.dataset.label = "";
+        const text = document.createElement("span");
+        text.dataset.text = "";
+        text.append(t.name);
+        if (t.tns) {
+            const tns = document.createElement("span");
+            tns.dataset.tns = "";
+            tns.textContent = `(${t.tns})`;
+            text.append(tns);
+        }
+        text.append(` // ${t.artist}`);
+        label.append(text);
+
+        row.append(cover, label);
+        box.append(row);
+    });
+}
+
+/* ============================================================
+ * 7. 启动
  * ============================================================ */
 
 export function initMusicPlayer() {
@@ -282,7 +488,7 @@ export function initMusicPlayer() {
     setState("empty");
     ticker();
     spectrum();
-    /* 切页后面板 DOM 持久、按钮态不变；需要重挂的只有
-     * 新文档里的悬浮按钮（data-playing），renderButtons 顺带完成 */
+    void loadPlaylist();
+    document.fonts?.ready.then(() => markCurrentRow());
     document.addEventListener("astro:after-swap", renderButtons);
 }
