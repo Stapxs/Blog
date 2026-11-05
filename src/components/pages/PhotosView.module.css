@@ -1,0 +1,230 @@
+/* 相簿页：CSS 多列瀑布流 */
+
+.wall {
+	margin: 0.8em 0 0;
+	columns: 300px 3;
+	column-gap: 1em;
+}
+
+.wall[data-masonry-on] {
+	columns: auto;
+	display: flex;
+	align-items: flex-start;
+	gap: 1em;
+}
+
+.col {
+	flex: 1 1 0;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+}
+
+.wall[data-masonry-on] .card {
+	margin-bottom: 0;
+}
+
+.card {
+	/* 多列布局里防止卡片被截断到两列 */
+	break-inside: avoid;
+	display: flex;
+	flex-direction: column;
+	margin: 0 0 1em;
+	padding: 0.6em;
+	background: var(--surface);
+	border: 1px solid var(--line);
+}
+
+.card:hover {
+	border-color: var(--accent);
+}
+
+.link {
+	display: block;
+	text-decoration: none;
+}
+
+.link:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: 0;
+	background-color: rgb(var(--gray-light));
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.caption {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15em;
+	padding-top: 0.5em;
+	font-size: 0.72em;
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+}
+
+.date {
+	color: rgb(var(--gray));
+}
+
+.meta {
+	color: rgb(var(--gray));
+	opacity: 0.75;
+}
+
+.empty {
+	color: rgb(var(--gray));
+}
+
+.empty code {
+	font-size: 0.9em;
+}
+
+@media (max-width: 560px) {
+	.wall {
+		columns: 2;
+		column-gap: 0.8em;
+	}
+
+	.card {
+		padding: 0.4em;
+	}
+}
+
+/* ============ 照片灯箱 ============ */
+
+.lightbox {
+	--lb-panel: 288px;
+	--lb-gap: 1em;
+	--lb-pad-x: 1em;
+	position: fixed;
+	inset: 0;
+	z-index: 300;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 3em var(--lb-pad-x) 2em;
+	box-sizing: border-box;
+	background: rgb(0 0 0 / 85%);
+	animation: photos-lightbox-in 0.15s ease;
+}
+
+.lightboxBody {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: center;
+	gap: var(--lb-gap);
+	max-width: 100%;
+}
+
+.lightboxImg {
+	flex: 0 1 auto;
+	min-width: 0;
+	display: block;
+	height: min(
+		78vh,
+		calc(
+			min(
+				1200px,
+				100vw - 2 * var(--lb-pad-x) - var(--lb-panel) - var(--lb-gap)
+			) * var(--lb-ar-num, 1)
+		),
+		var(--lb-nat-h, 78vh)
+	);
+	width: auto;
+	max-width: min(calc(100vw - 2 * var(--lb-pad-x)), 1200px);
+	background-color: rgb(var(--gray-light));
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	border: 1px solid rgb(var(--gray-dark));
+	border-radius: 0;
+}
+
+.lightboxAside {
+	flex: 0 0 var(--lb-panel);
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5em;
+}
+
+.lightboxInfo {
+	box-sizing: border-box;
+	width: 100%;
+	max-height: calc(78vh - 2em);
+	overflow-y: auto;
+	margin: 0;
+	padding: 0.6em 1em;
+	background: var(--bg);
+	border: 1px solid var(--green);
+	font-size: 0.8em;
+	line-height: 1.7;
+	color: rgb(var(--gray));
+	text-align: left;
+}
+
+.lightboxNote {
+	color: rgb(var(--black));
+	white-space: pre-line;
+	margin: 0 0 0.8em;
+	padding-bottom: 0.8em;
+	border-bottom: 1px dashed rgb(var(--gray-light));
+}
+
+.lightboxDate {
+	color: var(--green);
+}
+
+.lightboxHint {
+	color: rgb(var(--gray));
+	font-size: 0.72em;
+	line-height: 1.5;
+	opacity: 0.75;
+}
+
+@media (max-width: 720px) {
+	.lightboxBody {
+		flex-direction: column;
+	}
+
+	.lightboxImg {
+		height: auto;
+		width: min(100%, calc(62vh / var(--lb-ar-num, 1)), var(--lb-nat-w, 100%));
+		max-width: 100%;
+		max-height: 62vh;
+	}
+
+	.lightboxAside {
+		flex: 0 0 auto;
+		max-width: min(92vw, 40em);
+	}
+
+	.lightboxInfo {
+		max-height: 24vh;
+	}
+}
+
+@keyframes photos-lightbox-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lightbox {
+		animation: none;
+	}
+}

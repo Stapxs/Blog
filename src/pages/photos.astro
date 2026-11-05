@@ -1,0 +1,59 @@
+---
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Root from '../layouts/Root.astro';
+import PhotosView, { type PhotoCard, type PhotoMeta } from '../components/pages/PhotosView';
+import photoData from '../data/photos.json';
+import { SITE_TITLE } from '../consts';
+
+// photos 目录下的全部图片
+const glob = import.meta.glob<ImageMetadata>(
+	'../assets/photos/**/*.{jpg,jpeg,png,webp,avif,gif}',
+	{ eager: true, import: 'default' },
+);
+
+// 瀑布流缩略的多档宽度
+const SRCSET_WIDTHS = [480, 800, 1200];
+const SIZES = '(max-width: 560px) 46vw, (max-width: 1040px) 31vw, 300px';
+
+const jsonPhotos = photoData.photos as PhotoMeta[];
+const photos: PhotoCard[] = [];
+for (const photo of jsonPhotos) {
+	const meta = glob[`../assets/photos/${photo.file}`];
+	if (!meta) continue;
+
+	const widths = SRCSET_WIDTHS.filter(
+		(w) => w <= Math.max(meta.width, meta.height),
+	);
+	let src = meta.src;
+	let srcSet = '';
+	if (widths.length) {
+		const img = await getImage({ src: meta, widths });
+		srcSet = img.srcSet.attribute;
+		const pick =
+			img.srcSet.values.find((v) => v.descriptor === '800w') ??
+			img.srcSet.values.at(-1);
+		src = pick?.url ?? meta.src;
+	}
+
+	photos.push({
+		...photo,
+		src,
+		srcSet,
+		sizes: SIZES,
+		fullSrc: meta.src,
+	});
+}
+
+const ogImage = photos.length
+	? glob[`../assets/photos/${photos[0].file}`]
+	: undefined;
+---
+
+<Root
+	title={`照片 | ${SITE_TITLE}`}
+	description="快门下的时间线 —— 按拍摄时间排序的照片墙"
+	image={ogImage}
+>
+	<PhotosView photos={photos} />
+</Root>

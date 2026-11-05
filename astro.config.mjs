@@ -4,11 +4,40 @@ import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
+import { generatePhotosJson, PHOTOS_DIR } from './scripts/photos-exif.mjs';
+
+/**
+ * 相簿数据集成：构建 / dev 启动时扫描 src/assets/photos 的 EXIF
+ * （拍摄时间、设备、镜头、曝光参数）生成 src/data/photos.json；
+ * dev 期监听照片目录，丢照片 / 删照片后自动重新生成。
+ */
+function photosExif() {
+	const run = (logger) =>
+		generatePhotosJson({ log: (m) => logger.info(m) }).catch((err) =>
+			logger.error(`生成 photos.json 失败：${err?.message ?? err}`),
+		);
+	return {
+		name: 'photos-exif',
+		hooks: {
+			'astro:config:setup': ({ logger }) => run(logger),
+			'astro:server:setup': ({ server, logger }) => {
+				server.watcher.add(PHOTOS_DIR);
+				let timer;
+				// 照片文件较大，复制 / 导出过程会触发多次事件：防抖后重新生成
+				server.watcher.on('all', (_event, file) => {
+					if (!file?.startsWith(PHOTOS_DIR)) return;
+					clearTimeout(timer);
+					timer = setTimeout(() => void run(logger), 300);
+				});
+			},
+		},
+	};
+}
 
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://example.com',
-	integrations: [react(), mdx(), sitemap()],
+	integrations: [react(), mdx(), sitemap(), photosExif()],
 	fonts: [
 		{
 			provider: fontProviders.local(),
