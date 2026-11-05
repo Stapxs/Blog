@@ -1,9 +1,14 @@
 ---
 import FriendsView from "../components/pages/FriendsView";
+import Comments from "../components/Comments.astro";
 import Root from "../layouts/Root.astro";
 import { SITE_TITLE } from "../consts";
 ---
 
 <Root title={`朋友 | ${SITE_TITLE}`} description="欢迎互换友链啦">
     <FriendsView />
+    <Comments
+        path="/friends/"
+        placeholder="博客简介（40 字以内）和 https 的头像链接写在这里——"
+    />
 </Root>

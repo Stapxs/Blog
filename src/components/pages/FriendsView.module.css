@@ -71,8 +71,9 @@
 }
 
 /* ===== README 块 ===== */
+/* 底部不留距：下方紧跟友链申请评论区（.panel 自带 margin-top） */
 .readme {
-	margin: 0.8em 0 4em 0;
+	margin: 0.8em 0 0 0;
 	padding: 0.6em 1em;
 	border-left: 3px solid var(--accent);
 }

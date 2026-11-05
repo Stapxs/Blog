@@ -1,5 +1,17 @@
 ---
 import { WALINE_SERVER_URL } from '../consts';
+
+interface Props {
+	/** Waline 评论路径，缺省为当前页面路径 */
+	path?: string;
+	/** 输入框占位文案 */
+	placeholder?: string;
+}
+
+const {
+	path,
+	placeholder = '要说点什么捏——',
+} = Astro.props;
 ---
 
 {
@@ -8,14 +20,19 @@ import { WALINE_SERVER_URL } from '../consts';
 			<div class="panel">
 				<h4>/bin/comment-helper</h4>
 				<div>
-   	                <span class="cmd-prompt">&gt;</span> <span class="cmd-name">/bin/comment-helper</span>{' '}
-        			<span class="cmd-flag">-D</span> <span class="cmd-dir">/dev/ttyS0</span>{' '}
-        			<span class="cmd-flag">-b</span> 115200
-                </div>
+					<span class="cmd-prompt">&gt;</span> <span class="cmd-name">/bin/comment-helper</span>{' '}
+					<span class="cmd-flag">-D</span> <span class="cmd-dir">/dev/ttyS0</span>{' '}
+					<span class="cmd-flag">-b</span> 115200
+				</div>
 				<div class="waline-loading" data-comments-loading role="status">
 					<span class="cmd-prompt">&gt;</span> 正在加载附加组件 <span class="cursor">▌</span>
 				</div>
-			<div id="waline-container" class="waline-container pending" />
+				<div
+					id="waline-container"
+					class="waline-container pending"
+					data-path={path}
+					data-placeholder={placeholder}
+				/>
 			</div>
 		</section>
 	)
@@ -175,7 +192,7 @@ import { WALINE_SERVER_URL } from '../consts';
 			el: mount,
 			serverURL: WALINE_SERVER_URL,
 			lang: 'zh-CN',
-			path: window.location.pathname,
+			path: mount.dataset.path || window.location.pathname,
 			dark: 'html[data-theme="dark"]',
 			meta: ['nick', 'mail', 'link'],
 			requiredMeta: ['nick', 'mail', 'link'],
@@ -187,7 +204,7 @@ import { WALINE_SERVER_URL } from '../consts';
 			noCopyright: true,
 			// https://comment.stapxs.cn/api/comment/rss
 			noRss: true,
-			locale: { placeholder: '要说点什么捏——' },
+			locale: { placeholder: mount.dataset.placeholder || '要说点什么捏——' },
 		});
 
 		viewportObserver = new IntersectionObserver((entries) => {
@@ -206,7 +223,7 @@ import { WALINE_SERVER_URL } from '../consts';
 				bootObserver.observe(mainEl, {
 					attributes: true,
 				attributeFilter: ['class'],
-			});
+				});
 			}
 		}
 	};

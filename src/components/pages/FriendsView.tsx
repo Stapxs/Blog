@@ -153,8 +153,9 @@ export default function FriendsView() {
                 </div>
                 <div className={styles.readme}>
                     <p>
-                        欢迎互换友链 —— 找篇文章留个评论就好，附上博客链接、
-                        一段简短的介绍（40 字以内）和 https 的头像链接。
+                        欢迎互换友链 —— 在下方评论区留言申请就好：昵称填博客名称、
+                        网址填博客链接，评论里附上一段简短的介绍（40 字以内）和
+                        https 的头像链接。
                     </p>
                     <p>
                         我的博客信息都放在{' '}
