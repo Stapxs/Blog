@@ -6,7 +6,7 @@
 	justify-content: flex-end;
 	gap: 0.75em;
 	/* 距页面右缘的留白（与底部 1.5em 对称） */
-	padding-right: 1.5em;
+	padding-right: 1em;
 	margin-top: -3em;
 	/* 满宽横条悬于内容上方，空区域不拦截点击 */
 	pointer-events: none;
@@ -53,15 +53,11 @@
 
 .ring path {
 	fill: none;
-	stroke: rgb(var(--black)); /* 暗色主题下为白色，亮色主题自动换深色墨 */
-	/* viewBox 100 单位映射到 3em(≈51px) 按钮上，4 单位 ≈ 2px；
-	 * 不用 non-scaling-stroke —— 它与 pathLength 虚线归一化在部分浏览器冲突 */
+	stroke: rgb(var(--black));
 	stroke-width: 4;
 }
 
 /* ============ 按钮个性配色 ============ */
-/* 回到顶部：滚入 main 后出现（脚本挂 data-show）、回到 main 顶之上淡出；
- * 隐藏态不占焦点（visibility: hidden 移出 tab 序列） */
 .top {
 	opacity: 0;
 	visibility: hidden;

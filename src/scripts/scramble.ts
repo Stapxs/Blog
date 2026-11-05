@@ -58,12 +58,16 @@ const setChar = (s: string, i: number, ch: string): string =>
 
 /** 把元素的所有文本节点替换为宽度匹配的空白模板（行长不变、零布局抖动）。
  *  用于"滚到哪里、哪里解密"的滚动揭示：屏外段落先铺空白，进入视口再 play()。
- *  原文保存在 WeakMap 里，play() 会先恢复再捕获，避免把空白当成揭示目标。 */
-const originals = new WeakMap<HTMLElement, string[]>();
+ *  原文按文本节点身份（而非位置）保存在 WeakMap 里：blank 与 restore 之间
+ *  外部脚本可能重排 DOM（如相簿瀑布流把卡片分进各列），按位置还原会把
+ *  别的节点的文字写进来；按节点还原则与顺序无关。 */
+const originals = new WeakMap<HTMLElement, Map<Text, string>>();
 
 export function blankNode(node: HTMLElement): void {
 	const nodes = collectTextNodes(node);
-	originals.set(node, nodes.map((n) => n.nodeValue));
+	const saved = new Map<Text, string>();
+	for (const n of nodes) saved.set(n, n.nodeValue as string);
+	originals.set(node, saved);
 	const lens = nodes.map((n) => n.nodeValue.length);
 	const text = nodes.map((n) => n.nodeValue).join('');
 	const blank = text
@@ -82,9 +86,10 @@ export function restoreNode(node: HTMLElement): void {
 	const saved = originals.get(node);
 	if (!saved) return;
 	const nodes = collectTextNodes(node);
-	nodes.forEach((n, i) => {
-		if (saved[i] !== undefined && saved[i] !== null) n.nodeValue = saved[i];
-	});
+	for (const n of nodes) {
+		const text = saved.get(n);
+		if (text !== undefined) n.nodeValue = text;
+	}
 	originals.delete(node);
 }
 

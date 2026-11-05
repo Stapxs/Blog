@@ -28,10 +28,13 @@ import { WALINE_SERVER_URL } from '../consts';
 	import { WALINE_SERVER_URL } from '../consts';
 
 	let instance: ReturnType<typeof init> = null;
-	/** 视野监听） */
+	/** 视野监听 */
 	let viewportObserver: IntersectionObserver | null = null;
 	/** boot 序列监听 */
 	let bootObserver: MutationObserver | null = null;
+	/** 切页高度形变收尾监听 */
+	let settleObserver: MutationObserver | null = null;
+	let settleTimer: number | null = null;
 
 	const REDUCED = () =>
 		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -41,6 +44,12 @@ import { WALINE_SERVER_URL } from '../consts';
 		viewportObserver = null;
 		bootObserver?.disconnect();
 		bootObserver = null;
+		settleObserver?.disconnect();
+		settleObserver = null;
+		if (settleTimer !== null) {
+			window.clearTimeout(settleTimer);
+			settleTimer = null;
+		}
 	};
 
 	const reveal = (
@@ -102,8 +111,6 @@ import { WALINE_SERVER_URL } from '../consts';
 		const heading = panel?.querySelector<HTMLElement>('h4');
 		if (!section || !loading || !heading) return;
 
-		let inView = false;
-
 		const mainEl = document.querySelector<HTMLElement>(
 			'[data-boot="main"]',
 		);
@@ -111,11 +118,55 @@ import { WALINE_SERVER_URL } from '../consts';
 			!document.documentElement.classList.contains('boot') ||
 			!!mainEl?.classList.contains('boot-in');
 
+		let settleDeadline = false;
+		const layoutSettled = () =>
+			settleDeadline ||
+			(!document.querySelector('[data-swap-host]') &&
+				!mainEl?.style.height);
+
+		const inViewport = () => {
+			const box = section.getBoundingClientRect();
+			return box.bottom > 0 && box.top < window.innerHeight;
+		};
+
 		const maybeReveal = () => {
-			if (!inView) return;
+			if (mount.dataset.revealed) return;
 			if (!bootPhaseDone()) return;
+			if (!layoutSettled()) {
+				watchSettle();
+				return;
+			}
+			if (!inViewport()) return;
 			cleanup();
 			reveal(mount, loading, heading);
+		};
+
+		const watchSettle = () => {
+			if (settleObserver) return;
+			settleObserver = new MutationObserver(() => {
+				if (layoutSettled()) {
+					settleObserver?.disconnect();
+					settleObserver = null;
+				}
+				maybeReveal();
+			});
+			if (mainEl) {
+				settleObserver.observe(mainEl, {
+					attributes: true,
+					attributeFilter: ['style'],
+				});
+			}
+			settleObserver.observe(document.documentElement, {
+				childList: true,
+				subtree: true,
+			});
+			if (settleTimer === null) {
+				settleTimer = window.setTimeout(() => {
+					settleTimer = null;
+					settleDeadline = true;
+					maybeReveal();
+				}, 4000);
+			}
 		};
 
 		// 立即初始化
@@ -140,8 +191,8 @@ import { WALINE_SERVER_URL } from '../consts';
 		});
 
 		viewportObserver = new IntersectionObserver((entries) => {
-			inView = entries.some((e) => e.isIntersecting);
-			maybeReveal();
+			// 只做「滚进视口」的触发器；是否真在视口内由 maybeReveal 实时判定
+			if (entries.some((e) => e.isIntersecting)) maybeReveal();
 		});
 		viewportObserver.observe(section);
 
