@@ -2,7 +2,7 @@
 
 .panel {
 	position: fixed;
-	height: 65vh;
+	height: calc(65vh / var(--page-zoom));
 	top: auto;
 	bottom: 6em;
 	left: auto;
@@ -287,7 +287,7 @@
 
 @media (max-width: 1419px) {
 	.panel {
-		width: min(350px, calc(100vw - 3em));
+		width: min(350px, calc(100vw / var(--page-zoom) - 3em));
 	}
 }
 

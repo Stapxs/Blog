@@ -5,7 +5,6 @@
 	list-style: none;
 }
 
-/* 跨行跟随的 hover 指示条（由全局脚本驱动 transform） */
 .hoverBar {
 	position: absolute;
 	top: 0;
@@ -59,7 +58,6 @@
 	color: rgb(var(--gray));
 }
 
-/* 行尾最后一个标签：与日期同色，label 图标 + 文本 */
 .tag {
 	flex: 0 0 auto;
 	display: inline-flex;
@@ -73,14 +71,16 @@
 	flex: 1 1 0;
 	min-width: 0;
 	color: var(--fg);
-	overflow-wrap: anywhere;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .pagination {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-top: 1.5em;
+	margin: 1.5em 0 4em 0;
 	padding: 0 0.6em;
 }
 
@@ -101,13 +101,18 @@
 }
 
 @media (max-width: 720px) {
+	.author,
+	.date,
+	.tag {
+		display: none;
+	}
+
 	.row {
 		flex-wrap: wrap;
 		row-gap: 0.2em;
 		column-gap: 1em;
 	}
 
-	.author,
 	.category {
 		flex-basis: auto;
 		overflow: visible;

@@ -72,7 +72,7 @@ html.boot [data-boot='main'].boot-in ~ .comments {
 
 @media (max-width: 720px) {
 	.comments {
-		padding: 0 1em 4em;
+		padding: 0 0 4em;
 	}
 }
 
@@ -210,4 +210,15 @@ html.boot [data-boot='main'].boot-in ~ .comments {
 
 .wl-actions button.wl-action[title='预览']::before {
 	content: '\ed18';
+}
+
+@media (max-width: 720px) {
+    .waline-container {
+        margin: 2px -1.5em 0 -1em;
+    }
+
+    #waline-container input,
+    #waline-container textarea {
+        font-size: calc(16px / var(--page-zoom));
+    }
 }

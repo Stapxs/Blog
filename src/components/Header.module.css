@@ -25,6 +25,10 @@
 	color: inherit;
 }
 
+.titlePrefix {
+	display: inline;
+}
+
 .nav {
 	display: flex;
 	flex-wrap: wrap;
@@ -38,6 +42,10 @@
 	display: flex;
 	justify-content: flex-start;
 	gap: 1em;
+}
+
+.linkIcon {
+	display: none;
 }
 
 .nav a {
@@ -90,7 +98,42 @@
 }
 
 @media (max-width: 720px) {
-	.socialLinks {
+    .title {
+        font-size: 1.3em;
+        width: 100%;
+    }
+	.titlePrefix {
 		display: none;
+	}
+	.nav {
+		flex-direction: column;
+		align-items: start;
+	}
+	.socialLinks {
+		padding: 15px 0;
+	}
+
+	.internalLinks {
+		flex-wrap: wrap;
+		gap: 0.25em;
+	}
+	.internalLinks > span {
+		display: none;
+	}
+	.internalLinks > a {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.3em;
+	}
+	.linkText {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+	.linkIcon {
+		display: block;
 	}
 }

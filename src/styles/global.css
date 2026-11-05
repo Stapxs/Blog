@@ -32,10 +32,10 @@
 	--box-shadow:
 		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
 		0 16px 32px rgba(var(--gray), 33%);
+
+	--page-zoom: 1;
 }
 
-/* 页面切换：关闭根 View Transition 的交叉淡入
- * （切页动画由幽灵层 + scramble 编排接管；主题涟漪也依赖此规则） */
 ::view-transition-old(root),
 ::view-transition-new(root) {
 	animation: none;
@@ -125,9 +125,7 @@ main {
 	width: calc(var(--content-width) + 2em);
 	max-width: calc(100% - 2em);
 	margin: 2rem auto auto auto;
-	/* 底部多留 2em：页面右下角悬浮按钮落位时与 main 底边缘对齐（3em 高），
-	 * 窄窗口下按钮会压在 main 右下角上方 —— 留白保证不遮挡分页器等内容 */
-	padding: 2em 2em 4em;
+	padding: 2em 2em 0 2em;
 	border: 1px solid var(--line);
 }
 h1,
@@ -213,8 +211,12 @@ hr {
 	border-top: 1px solid rgb(var(--gray-light));
 }
 @media (max-width: 720px) {
+	html {
+		zoom: 0.85;
+		--page-zoom: 0.85;
+	}
 	main {
-		padding: 1em 1em 4em;
+		padding: 1em 1em 0 1em;
 	}
 }
 
@@ -252,6 +254,13 @@ hr {
 	z-index: 200;
 }
 
+@media (max-width: 720px) {
+	.search-panel {
+		width: calc(100vw / var(--page-zoom) - 2em);
+		max-width: none;
+	}
+}
+
 .search-panel.open {
 	display: block;
 	animation: search-panel-in 0.16s ease;
@@ -284,6 +293,7 @@ hr {
 	outline: none;
 	color: var(--fg);
 	font: inherit;
+	font-size: max(1em, calc(16px / var(--page-zoom)));
 	caret-color: var(--green);
 }
 

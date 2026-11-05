@@ -373,8 +373,13 @@ const { title, description, image = FallbackImage, backToTop = false } =
                     document.addEventListener("pointerdown", function (e) {
                         var el = document.createElement("div");
                         el.className = "pixel-ripple";
-                        el.style.left = e.clientX - 2 + "px";
-                        el.style.top = e.clientY - 2 + "px";
+                        var pz =
+                            parseFloat(
+                                getComputedStyle(document.documentElement)
+                                    .zoom,
+                            ) || 1;
+                        el.style.left = (e.clientX - 2) / pz + "px";
+                        el.style.top = (e.clientY - 2) / pz + "px";
                         document.documentElement.appendChild(el);
                         var anim = el.animate(
                             [
@@ -552,10 +557,11 @@ const { title, description, image = FallbackImage, backToTop = false } =
             });
             show(nav);
 
-            /* P2（t≈1.5s）：main 框架（内容仍隐藏）+ 右上角图标 + 右下角悬浮按钮 —— 淡入 */
+            /* P2（t≈1.5s）：main 框架（内容仍隐藏）+ 右上角图标 + 导航图标 */
             window.setTimeout(() => {
                 show(one('[data-boot="main"]'));
                 show(one('[data-boot="icons"]'));
+                all('[data-boot="nav-icons"]').forEach(show);
                 show(one('[data-boot="dock"]'));
             }, 1500);
 
@@ -572,7 +578,7 @@ const { title, description, image = FallbackImage, backToTop = false } =
                 show(cmd);
             }, 2300);
 
-            /* P4（t≈3.4s）：列表 / 正文 —— 打字机（整块，波带自上而下扫过） */
+            /* P4（t≈3.4s）：列表 / 正文 —— 打字机 */
             window.setTimeout(() => {
                 all('[data-boot="rest"]').forEach((el, i) => {
                     play(el as HTMLElement, { duration: 1300, delay: i * 200 });
@@ -852,13 +858,19 @@ const { title, description, image = FallbackImage, backToTop = false } =
         });
 
         /* ================= 列表 hover ================= */
+        /* 根缩放（手机端 0.8）：gBCR/指针坐标是缩放后的视觉值，
+         * 写回 style 的 px 是未缩放值 —— 两者转换用 */
+        const rootZoom = () =>
+            parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+
         const moveHoverBar = function (list: HTMLElement, row: HTMLElement) {
             const bar = list.querySelector<HTMLElement>("[data-hover-bar]");
             if (!bar) return;
+            const z = rootZoom();
             const listRect = list.getBoundingClientRect();
             const rowRect = row.getBoundingClientRect();
-            bar.style.height = `${rowRect.height}px`;
-            bar.style.transform = `translateY(${rowRect.top - listRect.top + list.scrollTop}px)`;
+            bar.style.height = `${rowRect.height / z}px`;
+            bar.style.transform = `translateY(${(rowRect.top - listRect.top) / z + list.scrollTop}px)`;
             bar.style.opacity = "1";
         };
 
@@ -906,24 +918,26 @@ const { title, description, image = FallbackImage, backToTop = false } =
             const vh = window.innerHeight;
             const rect = progressMain.getBoundingClientRect();
             const start = rect.top + window.scrollY; // main 顶贴视口顶时的 scrollY
-            const end = start + rect.height - vh; // main 底贴视口底时的 scrollY
+            const height = progressMain.style.height
+                ? progressMain.scrollHeight * rootZoom() // 未缩放值 ×z 转视觉值
+                : rect.height;
+            const end = start + height - vh; // main 底贴视口底时的 scrollY
             const span = end - start;
             const ratio =
                 span > 0
                     ? Math.min(1, Math.max(0, (window.scrollY - start) / span))
-                    : window.scrollY >= end
-                      ? 1
-                      : 0;
+                    : 0;
             progressPath.style.strokeDashoffset = String(
                 100 - Math.round(ratio * 100),
             );
             progressBtn?.toggleAttribute("data-show", ratio > 0);
         };
-
         window.addEventListener("scroll", updateTopProgress, {
             passive: true,
         });
         window.addEventListener("resize", updateTopProgress);
+        const progressResize = new ResizeObserver(updateTopProgress);
+        if (progressMain) progressResize.observe(progressMain);
         document.addEventListener("astro:after-swap", () => {
             progressMain = document.querySelector<HTMLElement>(
                 '[data-boot="main"]',
@@ -932,6 +946,8 @@ const { title, description, image = FallbackImage, backToTop = false } =
                 "[data-backtop-path]",
             );
             progressBtn = document.querySelector<HTMLElement>("#back-to-top");
+            progressResize.disconnect();
+            if (progressMain) progressResize.observe(progressMain);
             updateTopProgress();
         });
         updateTopProgress();

@@ -116,3 +116,9 @@
 .markdown > :last-child {
 	margin-bottom: 0;
 }
+
+@media (max-width: 720px) {
+	.content {
+	    margin: 1em -1em 0 -1em;
+	}
+}

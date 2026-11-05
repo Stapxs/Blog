@@ -72,7 +72,7 @@
 
 /* ===== README 块 ===== */
 .readme {
-	margin-top: 0.8em;
+	margin: 0.8em 0 4em 0;
 	padding: 0.6em 1em;
 	border-left: 3px solid var(--accent);
 }

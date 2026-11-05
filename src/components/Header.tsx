@@ -1,4 +1,19 @@
-import { Chart, Github, Moon, Rss, Search, Sun } from 'pixelarticons/react';
+import {
+	Archive,
+	ArrowLeft,
+	Chart,
+	Code,
+	Folder,
+	Github,
+	Images,
+	Label,
+	Moon,
+	Rss,
+	Search,
+	Sun,
+	User,
+	Users,
+} from 'pixelarticons/react';
 import HeaderLink from './HeaderLink';
 import styles from './Header.module.css';
 
@@ -13,37 +28,48 @@ export default function Header({ siteTitle, currentPath }: Props) {
 		<header className={styles.header}>
 			<nav className={styles.nav}>
 				<h2 className={styles.title} data-boot="title">
-					<a href="/">/var/www/blog.stapxs.cn -&gt; ~/{siteTitle}</a>
+					<a href="/">
+						<span className={styles.titlePrefix}>/var/www/blog.stapxs.cn -&gt; </span>
+						~/{siteTitle}
+					</a>
 				</h2>
-        <div className={styles.internalLinks} data-boot="nav">
-          <HeaderLink href="." disabled>
-						.
-          </HeaderLink>
-          <HeaderLink href=".." id="history-back">
-						..
-          </HeaderLink>
-          <HeaderLink href="/env">
-						.env
-					</HeaderLink>
-					<HeaderLink href="/" currentPath={currentPath}>
-						./Archives
-					</HeaderLink>
-					<HeaderLink href="/category" currentPath={currentPath}>
-						./Category
-					</HeaderLink>
-					<HeaderLink href="/tags" currentPath={currentPath}>
-						./Tags
-					</HeaderLink>
-					<HeaderLink href="/photos" currentPath={currentPath}>
-						./Photos
-					</HeaderLink>
-					<HeaderLink href="/friends" currentPath={currentPath}>
-						./Friends
-					</HeaderLink>
-					<HeaderLink href="/about" currentPath={currentPath}>
-						./About
-					</HeaderLink>
-				</div>
+			<div className={styles.internalLinks} data-boot="nav">
+				<HeaderLink href="." disabled>
+					<span className={styles.linkText}>.</span>
+				</HeaderLink>
+				<HeaderLink href=".." id="history-back">
+					<span className={styles.linkText}>..</span>
+					<ArrowLeft className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
+				</HeaderLink>
+				<HeaderLink href="/env">
+					<span className={styles.linkText}>.env</span>
+					<Code className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
+				</HeaderLink>
+				<HeaderLink href="/" currentPath={currentPath}>
+					<span className={styles.linkText}>./Archives</span>
+					<Archive className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
+				</HeaderLink>
+				<HeaderLink href="/category" currentPath={currentPath}>
+					<span className={styles.linkText}>./Category</span>
+					<Folder className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
+				</HeaderLink>
+				<HeaderLink href="/tags" currentPath={currentPath}>
+					<span className={styles.linkText}>./Tags</span>
+					<Label className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
+				</HeaderLink>
+				<HeaderLink href="/photos" currentPath={currentPath}>
+					<span className={styles.linkText}>./Photos</span>
+					<Images className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
+				</HeaderLink>
+				<HeaderLink href="/friends" currentPath={currentPath}>
+					<span className={styles.linkText}>./Friends</span>
+					<Users className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
+				</HeaderLink>
+				<HeaderLink href="/about" currentPath={currentPath}>
+					<span className={styles.linkText}>./About</span>
+					<User className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
+				</HeaderLink>
+			</div>
 				<div className={styles.socialLinks} data-boot="icons">
 					<button type="button" id="search-toggle" className={styles.iconButton} aria-label="搜索">
 						<Search width={24} height={24} aria-hidden="true" />

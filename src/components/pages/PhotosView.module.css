@@ -131,17 +131,18 @@
 	min-width: 0;
 	display: block;
 	height: min(
-		78vh,
+		calc(78vh / var(--page-zoom)),
 		calc(
 			min(
 				1200px,
-				100vw - 2 * var(--lb-pad-x) - var(--lb-panel) - var(--lb-gap)
+				100vw / var(--page-zoom) - 2 * var(--lb-pad-x) - var(--lb-panel) -
+					var(--lb-gap)
 			) * var(--lb-ar-num, 1)
 		),
-		var(--lb-nat-h, 78vh)
+		var(--lb-nat-h, calc(78vh / var(--page-zoom)))
 	);
 	width: auto;
-	max-width: min(calc(100vw - 2 * var(--lb-pad-x)), 1200px);
+	max-width: min(calc(100vw / var(--page-zoom) - 2 * var(--lb-pad-x)), 1200px);
 	background-color: rgb(var(--gray-light));
 	background-size: cover;
 	background-position: center;
@@ -161,7 +162,7 @@
 .lightboxInfo {
 	box-sizing: border-box;
 	width: 100%;
-	max-height: calc(78vh - 2em);
+	max-height: calc(78vh / var(--page-zoom) - 2em);
 	overflow-y: auto;
 	margin: 0;
 	padding: 0.6em 1em;
@@ -193,24 +194,32 @@
 }
 
 @media (max-width: 720px) {
+    .col:last-child {
+        margin-bottom: 4em;
+    }
+
 	.lightboxBody {
 		flex-direction: column;
 	}
 
 	.lightboxImg {
 		height: auto;
-		width: min(100%, calc(62vh / var(--lb-ar-num, 1)), var(--lb-nat-w, 100%));
+		width: min(
+			100%,
+			calc(62vh / var(--page-zoom) / var(--lb-ar-num, 1)),
+			var(--lb-nat-w, 100%)
+		);
 		max-width: 100%;
-		max-height: 62vh;
+		max-height: calc(62vh / var(--page-zoom));
 	}
 
 	.lightboxAside {
 		flex: 0 0 auto;
-		max-width: min(92vw, 40em);
+		max-width: min(calc(92vw / var(--page-zoom)), 40em);
 	}
 
 	.lightboxInfo {
-		max-height: 24vh;
+		max-height: calc(24vh / var(--page-zoom));
 	}
 }
 
