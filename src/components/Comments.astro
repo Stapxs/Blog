@@ -1,0 +1,164 @@
+---
+import { WALINE_SERVER_URL } from '../consts';
+---
+
+{
+	WALINE_SERVER_URL && (
+		<section class="comments" aria-label="评论区">
+			<div class="panel">
+				<h4>/bin/comment-helper</h4>
+				<div>
+   	                <span class="cmd-prompt">&gt;</span> <span class="cmd-name">/bin/comment-helper</span>{' '}
+        			<span class="cmd-flag">-D</span> <span class="cmd-dir">/dev/ttyS0</span>{' '}
+        			<span class="cmd-flag">-b</span> 115200
+                </div>
+				<div class="waline-loading" data-comments-loading role="status">
+					<span class="cmd-prompt">&gt;</span> 正在加载附加组件 <span class="cursor">▌</span>
+				</div>
+			<div id="waline-container" class="waline-container pending" />
+			</div>
+		</section>
+	)
+}
+
+
+<script>
+	import { init } from '@waline/client';
+	import { play } from '../scripts/scramble';
+	import { WALINE_SERVER_URL } from '../consts';
+
+	let instance: ReturnType<typeof init> = null;
+	/** 视野监听） */
+	let viewportObserver: IntersectionObserver | null = null;
+	/** boot 序列监听 */
+	let bootObserver: MutationObserver | null = null;
+
+	const REDUCED = () =>
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	const cleanup = () => {
+		viewportObserver?.disconnect();
+		viewportObserver = null;
+		bootObserver?.disconnect();
+		bootObserver = null;
+	};
+
+	const reveal = (
+		mount: HTMLElement,
+		loading: HTMLElement,
+		heading: HTMLElement,
+	) => {
+		if (mount.dataset.revealed) return;
+		mount.dataset.revealed = '1';
+
+		// 减弱动效
+		if (REDUCED()) {
+			loading.remove();
+			mount.classList.remove('pending');
+			heading.textContent = '评论';
+			return;
+		}
+
+		// 组件本体
+		window.setTimeout(() => {
+		(heading.parentNode as HTMLDivElement).classList.add('loaded');
+			mount.classList.remove('pending');
+			mount.animate(
+				[{ opacity: '0' }, { opacity: '1' }],
+				{ duration: 450, easing: 'ease-out' },
+			);
+			// 加载占位
+			loading.classList.add('done');
+			window.setTimeout(() => loading.remove(), 300);
+			play(mount, { duration: 900 });
+			// 标题：解密退场旧文案后，「评论实用程序」以路径标题
+			// （PageTitle，boot P3 同款参数）的节奏解密入场
+			play(heading, {
+				reverse: true,
+				duration: 450,
+				onDone: () => {
+					heading.textContent = '评论实用程序';
+					play(heading, { duration: 800 });
+				},
+			});
+		}, 1000);
+	};
+
+	const armComments = () => {
+		cleanup();
+
+		const mount = document.getElementById('waline-container');
+		if (!mount) {
+			instance?.destroy();
+			instance = null;
+			return;
+		}
+
+		const section = mount.closest('.comments');
+		const panel = mount.closest('.panel');
+		const loading = panel?.querySelector<HTMLElement>(
+			'[data-comments-loading]',
+		);
+		const heading = panel?.querySelector<HTMLElement>('h4');
+		if (!section || !loading || !heading) return;
+
+		let inView = false;
+
+		const mainEl = document.querySelector<HTMLElement>(
+			'[data-boot="main"]',
+		);
+		const bootPhaseDone = () =>
+			!document.documentElement.classList.contains('boot') ||
+			!!mainEl?.classList.contains('boot-in');
+
+		const maybeReveal = () => {
+			if (!inView) return;
+			if (!bootPhaseDone()) return;
+			cleanup();
+			reveal(mount, loading, heading);
+		};
+
+		// 立即初始化
+		instance?.destroy();
+		instance = init({
+			el: mount,
+			serverURL: WALINE_SERVER_URL,
+			path: window.location.pathname,
+			dark: 'html[data-theme="dark"]',
+			meta: ['nick', 'mail', 'link'],
+			requiredMeta: ['nick', 'mail', 'link'],
+			pageSize: 10,
+			emoji: [
+				'//unpkg.com/@waline/emojis@1.1.0/qq',
+				'//unpkg.com/@waline/emojis@1.1.0/bilibili',
+			],
+			noCopyright: true,
+			// https://comment.stapxs.cn/api/comment/rss
+			noRss: true,
+			locale: { placeholder: '要说点什么捏——' },
+		});
+
+		viewportObserver = new IntersectionObserver((entries) => {
+			inView = entries.some((e) => e.isIntersecting);
+			maybeReveal();
+		});
+		viewportObserver.observe(section);
+
+		if (!bootPhaseDone()) {
+			bootObserver = new MutationObserver(maybeReveal);
+			bootObserver.observe(document.documentElement, {
+				attributes: true,
+				attributeFilter: ['class'],
+			});
+			if (mainEl) {
+				bootObserver.observe(mainEl, {
+					attributes: true,
+				attributeFilter: ['class'],
+			});
+			}
+		}
+	};
+
+	document.addEventListener('astro:page-load', armComments);
+	if (document.readyState === 'complete') armComments();
+</script>

@@ -1,0 +1,48 @@
+/*
+ * Waline 评论区样式
+ * https://waline.js.org/reference/client/style.html
+ */
+
+#waline-container {
+	/* 主题色 */
+	--waline-theme-color: var(--blue);
+	--waline-active-color: var(--blue);
+
+	/* 正文与界面文字 */
+	--waline-color: rgb(var(--gray-dark));
+	--waline-info-color: rgb(var(--gray));
+
+	/* 面板与输入框背景 */
+	--waline-bg-color: var(--surface);
+	--waline-bg-color-light: var(--bg);
+	--waline-bg-color-hover: rgb(var(--gray-light));
+	--waline-disable-bg-color: var(--bg);
+	--waline-disable-color: rgb(var(--gray));
+	--waline-info-bg-color: var(--bg);
+
+	/* 边框与阴影 */
+	--waline-border-color: var(--line);
+	--waline-border: 1px solid var(--line);
+	--waline-box-shadow: none;
+
+	/* 行内代码 / 引用块：沿用站点 gray-light（亮暗自动翻转） */
+	--waline-code-bg-color: rgb(var(--gray-light));
+	--waline-bq-color: rgb(var(--gray-light));
+
+	/* 徽章（博主标识、等级）用站点紫 */
+	--waline-badge-color: var(--purple);
+
+	/* 与 body 17px 的阅读尺寸保持接近 */
+	--waline-font-size: 16px;
+}
+
+/*
+ * 主按钮文字色：Waline 默认纯白。站点约定「亮色配白字、亮得很的配色配黑字」
+ * （参见 --red-fg）：暗色主题的蓝 #18b6ff 上白字对比度不足，换黑字。
+ */
+#waline-container {
+	--waline-white: #fff;
+}
+html[data-theme='dark'] #waline-container {
+	--waline-white: #000;
+}

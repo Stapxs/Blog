@@ -1,0 +1,44 @@
+# Waline 评论后端（SQLite 单机部署）
+services:
+  waline:
+    image: lizheming/waline:latest
+    container_name: waline
+    restart: always
+    ports:
+      - '127.0.0.1:8360:8360'
+    volumes:
+      - ./data:/app/data
+    environment:
+      TZ: 'Asia/Shanghai'
+
+      SQLITE_PATH: '/app/data'
+
+      # ---- 必改：用户登录密钥，openssl rand -hex 16 生成 ----
+      JWT_TOKEN: 'CHANGE_ME'
+
+      # ---- 站点信息 ----
+      SITE_NAME: '林槐的杂货铺'
+      SITE_URL: 'https://blog.stapxs.cn'
+      # 安全域名 = 博客域名 + Waline 后端域名
+      SECURE_DOMAINS: 'blog.stapxs.cn,comment.stapxs.cn'
+      # 管理员邮箱，用这个邮箱在 /ui/register 注册的账号自动成为管理员，
+      # 同时用于接收新评论通知邮件（需配置下方 SMTP）
+      AUTHOR_EMAIL: 'you@example.com'
+
+      # ---- 可选：邮件通知与注册邮箱验证（不配则无邮件功能）----
+      # SMTP_SERVICE: 'QQ' # 与 HOST/PORT 二选一；支持的服务商见 nodemailer 文档
+      # SMTP_HOST: 'smtp.qq.com'
+      # SMTP_PORT: '465'
+      # SMTP_USER: 'you@example.com'
+      # SMTP_PASS: 'SMTP 授权码（QQ/163 邮箱不是登录密码）'
+      # SMTP_SECURE: 'true'
+      # SENDER_NAME: '林槐的杂货铺'
+      # SENDER_EMAIL: 'you@example.com'
+
+      # ---- 可选：反垃圾 / 频控 ----
+      # IPQPS: '60' # 每个 IP 两次评论的最小间隔（秒），默认 60
+      # COMMENT_AUDIT: 'false' # true = 新评论需管理员审核后才显示
+      # AKISMET_KEY: 'false' # 不想用 Akismet 反垃圾时显式关闭
+
+      # ---- 可选：第三方社交登录（GitHub / 微博 / Google 等经 OAuth 桥接服务）----
+      # OAUTH_URL: 'https://oauth.lithub.cc' # 默认官方桥接，可自建 https://github.com/walinejs/auth

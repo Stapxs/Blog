@@ -1,6 +1,7 @@
 ---
 import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BlogPostView from '../../components/pages/BlogPostView';
+import Comments from '../../components/Comments.astro';
 import Root from '../../layouts/Root.astro';
 import { formatDateLocal } from '../../scripts/datetime';
 import { fetchSongDetail } from '../../scripts/songDetail';
@@ -42,4 +43,5 @@ const song = post.data.music
 	>
 		<Content />
 	</BlogPostView>
+	<Comments />
 </Root>

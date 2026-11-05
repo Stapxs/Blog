@@ -36,7 +36,7 @@ function photosExif() {
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://example.com',
+	site: 'https://blog.stapxs.cn',
 	integrations: [react(), mdx(), sitemap(), photosExif()],
 	fonts: [
 		{

@@ -1,0 +1,88 @@
+/*
+ * 评论区样式
+ */
+
+.comments {
+	box-sizing: border-box;
+	width: calc(var(--content-width) + 2em);
+	max-width: calc(100% - 2em);
+	margin: 0 auto;
+	transition: opacity 0.3s ease;
+}
+
+html.boot .comments {
+	visibility: hidden;
+	opacity: 0;
+}
+
+html.boot [data-boot='main'].boot-in ~ .comments {
+	visibility: visible;
+	opacity: 1;
+}
+
+.panel {
+	margin-top: 2em;
+	padding: 1.5em 1.5em 1em;
+	border: 1px solid var(--line);
+	height: 10em;
+}
+.panel.loaded {
+    height: auto;
+}
+
+.panel h4 {
+    margin: 0 0 1.2em;
+}
+
+.waline-loading {
+	margin-top: 2em;
+	color: rgb(var(--gray));
+	height: 1.7em;
+	overflow: hidden;
+	transition:
+		opacity 0.25s ease,
+		height 0.25s ease,
+		margin-top 0.25s ease;
+}
+
+.waline-loading .cursor {
+	animation: waline-blink 1s steps(2, start) infinite;
+}
+
+.waline-loading.done {
+	opacity: 0;
+	height: 0;
+	margin-top: 0;
+}
+
+@keyframes waline-blink {
+	to {
+		visibility: hidden;
+	}
+}
+
+.waline-container {
+	margin-top: 2em;
+}
+
+.waline-container.pending {
+	visibility: hidden;
+	opacity: 0;
+}
+
+.wl-panel {
+    font-size: 20px;
+    border-color: var(--blue);
+    border-radius: unset;
+    background: transparent;
+}
+
+.wl-btn {
+    border-radius: unset;
+}
+
+@media (max-width: 720px) {
+	.comments {
+		padding: 0 1em 4em;
+	}
+}
