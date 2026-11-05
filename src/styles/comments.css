@@ -70,6 +70,15 @@ html.boot [data-boot='main'].boot-in ~ .comments {
 	opacity: 0;
 }
 
+@media (max-width: 720px) {
+	.comments {
+		padding: 0 1em 4em;
+	}
+}
+
+/* ============ Waline 样式覆写 ============
+*/
+
 .wl-panel {
     font-size: 20px;
     border-color: var(--blue);
@@ -81,8 +90,124 @@ html.boot [data-boot='main'].boot-in ~ .comments {
     border-radius: unset;
 }
 
-@media (max-width: 720px) {
-	.comments {
-		padding: 0 1em 4em;
-	}
+.wl-sort li,
+.wl-comment-status button {
+    font-size: 14px;
+}
+
+.wl-card .wl-head .wl-nick {
+    font-size: 16px;
+}
+.wl-card .wl-content {
+    font-size: 17px;
+}
+
+.wl-card .wl-quote {
+    border: unset;
+}
+
+.wl-comment {
+    flex-direction: row-reverse;
+}
+.wl-login-info {
+    position: absolute;
+    right: 25px;
+    top: 25px;
+}
+
+/* ============ Waline 图标像素化 ============
+ * node_modules/pixelarticons/fonts/pixelart-icons-font.css
+ *  like → heart(\ebe7)      reply → message-reply(\ec8f)
+ *  edit → pencil(\ecc5)     delete → trash(\edbe)
+ *  rss → rss(\ed0b)         close → close(\eb30)
+ */
+
+.wl-like svg,
+.wl-reply svg,
+.wl-edit svg,
+.wl-delete svg,
+.wl-rss svg,
+.wl-close svg {
+	display: none;
+}
+
+.wl-like::before,
+.wl-reply::before,
+.wl-edit::before,
+.wl-delete::before,
+.wl-close::before {
+	font-family: 'pixelart-icons-font';
+	font-size: 24px;
+	line-height: 1;
+}
+
+.wl-rss::before {
+	font-family: 'pixelart-icons-font';
+	font-size: 16px;
+	line-height: 1;
+}
+
+.wl-like::before {
+	content: '\ebe7';
+}
+.wl-reply::before {
+	content: '\ec8f';
+}
+.wl-edit::before {
+	content: '\ecc5';
+}
+.wl-delete::before {
+	content: '\edbe';
+}
+.wl-rss::before {
+	content: '\ed0b';
+}
+.wl-close::before {
+	content: '\eb30';
+	color: var(--waline-border-color);
+}
+
+/* 点赞激活态
+.wl-like:has(path[fill='red'])::before {
+	color: var(--red);
+}
+
+/* ============ 编辑器工具栏图标（.wl-actions） ============
+ *   a.wl-action              → Markdown 指南
+ *   button[title='表情']     → smile
+ *   label[title='上传图片']   → image
+ *   button[title='预览']      → search
+ */
+
+.wl-actions .wl-action svg {
+	display: none;
+}
+
+.wl-actions a,
+.wl-actions button,
+.wl-actions label {
+    margin-right: 0.5em;
+}
+
+.wl-actions .wl-action::before {
+	font-family: 'pixelart-icons-font';
+	font-size: 24px;
+	line-height: 1;
+}
+
+.wl-actions a.wl-action::before {
+	content: '\eb24';
+	font-size: 25px;
+}
+
+.wl-actions button.wl-action[title='表情']::before {
+	content: '\ed43';
+}
+
+.wl-actions label.wl-action::before {
+	content: '\ebfb';
+}
+
+.wl-actions button.wl-action[title='预览']::before {
+	content: '\ed18';
 }

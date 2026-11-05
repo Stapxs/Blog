@@ -7,14 +7,6 @@ import { SITE_TITLE } from "../consts";
 <Root title={`关于 | ${SITE_TITLE}`} description="啊吧啊吧，这是 SS！">
     <AboutView />
     <script>
-    /* 小槐在做什么：并行拉取 Home Assistant 前台应用 + Steam 状态，
-     * 组合成「小槐正在使用 X（HH:MM），Steam 在线，正在玩/什么都没玩儿」。
-     * 两路互不拖累（allSettled，失败沿用上次结果），组合文本去重后
-     * 覆盖静态兜底文案并做解密打字机。
-     * 刷新由倒计时驱动：#about-refresh 每秒 -1，到 0 触发刷新并回到 30。
-     * 模块脚本跨切页只执行一次 —— 立即执行 + astro:after-swap 重入
-     * 两个入口都过 loadHello（1s 防抖避免同一次切页的脚本执行与
-     * after-swap 双触发造成重复请求） */
     import { play } from "../scripts/scramble";
 
     const HELLO_API =
@@ -24,7 +16,6 @@ import { SITE_TITLE } from "../consts";
 
     let lastRun = 0;
     let lastState = "";
-    /* 两段内容的缓存：某一路失败时沿用上次结果 */
     let appPart: { state: string; time: string } | null = null;
     let steamPart: { online: boolean; game: string | null } | null = null;
 
@@ -35,8 +26,6 @@ import { SITE_TITLE } from "../consts";
         if (!el) return;
         if (Date.now() - lastRun < 1000) return;
         lastRun = Date.now();
-        /* 请求在路上：倒计时显示 "--" 且暂停（首刷错位问题的根源
-         * 就是首刷未回来时倒计时已经在跑） */
         loading = true;
         renderCountdown();
 
@@ -57,39 +46,38 @@ import { SITE_TITLE } from "../consts";
             appPart = { state: ha.value.state, time: `${hh}:${mm}` };
         }
         if (steam.status === "fulfilled" && steam.value?.data) {
-            /* personastate 0 = 不在线，其余按在线；游戏字段仅游玩时有 */
             const d = steam.value.data;
             steamPart = {
                 online: d.personastate !== 0,
                 game: d.gameextrainfo ?? null,
             };
         }
-        /* 请求落地（成功/失败皆算）：退出 loading、倒数重新从 30 起 ——
-         * 放在去重之前，内容没变下一轮倒计时也要重新开始 */
         loading = false;
         countdown = REFRESH_S;
         renderCountdown();
 
         if (!appPart && !steamPart) return;
 
-        /* 去重：组合文本没变不打字机 */
         const plain = `${
             appPart ? `小槐正在使用 ${appPart.state}（${appPart.time}）` : ""
         }${
             steamPart
                 ? `${appPart ? "，" : ""}Steam ${
                       steamPart.online ? "在线" : "不在线"
-                  }，${
-                      steamPart.game
-                          ? `正在玩 ${steamPart.game}`
-                          : "但是什么都没玩儿"
+                  }${
+                      steamPart.online
+                          ? `，${
+                                steamPart.game
+                                    ? `正在玩 ${steamPart.game}`
+                                    : "但是什么都没玩儿"
+                            }`
+                          : ""
                   }`
                 : ""
         }`;
         if (plain === lastState) return;
         lastState = plain;
 
-        /* 渲染：时间/离线/摸鱼态灰色，在线染绿，应用/游戏名染黄 */
         const colorSpan = (
             text: string,
             color: string,
@@ -119,29 +107,24 @@ import { SITE_TITLE } from "../consts";
                 s.textContent = "在线";
                 s.style.color = "var(--green)";
                 el.append(s);
+                if (steamPart.game) {
+                    el.append("，正在玩 ");
+                    el.append(yellowSpan(steamPart.game));
+                } else {
+                    el.append("，");
+                    el.append(graySpan("但是什么都没玩儿"));
+                }
             } else {
                 el.append(graySpan("不在线"));
             }
-            if (steamPart.game) {
-                el.append("，正在玩 ");
-                el.append(yellowSpan(steamPart.game));
-            } else {
-                el.append("，");
-                el.append(graySpan("但是什么都没玩儿"));
-            }
         }
 
-        /* 与标题（data-boot="pagetitle"）同款解密打字机 */
         if (
             !window.matchMedia("(prefers-reduced-motion: reduce)").matches
         )
             play(el, { duration: 800 });
     }
 
-    /* ============ 刷新倒计时（也承担轮询调度） ============
-     * loading = 有请求在路上（含首刷）：显示 "--" 且倒数暂停，
-     * 请求落地后由 loadHello 重置为 30 重新倒数 —— 保证倒计时
-     * 永远从「数据实际到手」的时刻起算，不与请求耗时错位 */
     let countdown = REFRESH_S;
     let loading = false;
     let secTimer: number | undefined;
@@ -178,8 +161,6 @@ import { SITE_TITLE } from "../consts";
     startTimer();
     void loadHello();
 
-    /* 切页重入：元素全新（服务端兜底文案），lastState 要重置，
-     * 否则应用没变时会被去重跳过、兜底文案一直留着 */
     document.addEventListener("astro:after-swap", () => {
         if (!document.querySelector("#about-hello")) {
             stopTimer();
