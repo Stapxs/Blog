@@ -17,8 +17,8 @@ import { generatePhotosJson, PHOTOS_DIR } from './scripts/photos-exif.mjs';
  */
 function photosExif() {
 	/** @param {AstroIntegrationLogger} logger */
-	const run = (logger) => {
-		void generatePhotosJson({ log: (m) => logger.info(m) }).catch((err) =>
+	const run = async (logger) => {
+		await generatePhotosJson({ log: (m) => logger.info(m) }).catch((err) =>
 			logger.error(`生成 photos.json 失败：${err?.message ?? err}`),
 		);
 	};
