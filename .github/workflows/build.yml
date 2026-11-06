@@ -1,0 +1,42 @@
+# 手动触发的「类型检查 + 构建」流水线：
+#   仓库页 → Actions → 检查与构建 → Run workflow
+# 产物为 dist/ 静态文件，可在运行记录页面下载。
+name: 检查与构建
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: 类型检查与构建
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v7
+
+      # Node 版本跟随仓库里的 .tool-versions（asdf），与本地开发环境保持一致
+      - name: 配置 Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .tool-versions
+          cache: yarn
+
+      - name: 安装依赖
+        run: yarn install --frozen-lockfile
+
+      - name: 类型检查（tsc + Astro content mapper）
+        run: yarn typecheck
+
+      - name: 构建静态文件
+        run: yarn build
+
+      - name: 上传构建产物（dist/）
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
