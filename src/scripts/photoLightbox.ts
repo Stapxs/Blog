@@ -1,5 +1,6 @@
 import styles from '../components/pages/PhotosView.module.css';
 import { play } from './scramble';
+import { track } from './analytics';
 
 /* 照片灯箱 */
 
@@ -28,6 +29,8 @@ function infoLine(text: string, className?: string) {
 
 function openLightbox(a: HTMLAnchorElement) {
 	closeLightbox();
+	/* umami：照片灯箱打开 */
+	track('photo_view', { file: (a.dataset.file ?? '').slice(0, 200) });
 
 	const box = document.createElement('div');
 	box.className = styles.lightbox;
@@ -60,10 +63,24 @@ function openLightbox(a: HTMLAnchorElement) {
 		.filter(Boolean)
 		.join(', ');
 	if (layers) img.style.backgroundImage = layers;
+
+	// 原图加载状态角标：加载中 → 加载完成即消失 / 失败常驻提示
+	const loading = document.createElement('span');
+	loading.className = styles.lightboxLoading;
+	loading.textContent = '加载中';
 	img.addEventListener(
 		'load',
 		() => {
 			img.style.backgroundImage = '';
+			loading.remove();
+		},
+		{ once: true },
+	);
+	img.addEventListener(
+		'error',
+		() => {
+			loading.textContent = '加载失败';
+			loading.classList.add(styles.lightboxError);
 		},
 		{ once: true },
 	);
@@ -93,12 +110,15 @@ function openLightbox(a: HTMLAnchorElement) {
 
 	const body = document.createElement('div');
 	body.className = styles.lightboxBody;
-	body.append(img, aside);
+	body.append(img, loading, aside);
 
 	box.append(body);
 	document.body.append(box);
 	lightbox = box;
 	lightboxBody = body;
+
+	// 原图命中缓存时 load 事件早已就绪（或不会再触发），直接收掉角标
+	if (img.complete && img.naturalWidth > 0) loading.remove();
 
 	// 弹窗期间锁背景滚动
 	prevOverflow = document.documentElement.style.overflow;

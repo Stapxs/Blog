@@ -97,3 +97,41 @@ if (firstImageRef?.startsWith('/')) {
 	</BlogPostView>
 	<Comments />
 </Root>
+
+<script>
+	/* umami：文章阅读深度 —— 滚动进度到 25/50/75/100% 各上报一次。
+	 * main > article 仅文章页存在，其余页面监听空转；
+	 * ClientRouter 切页后由 astro:page-load 重新锁定正文元素 */
+	import { track } from '../../scripts/analytics';
+
+	const MARKS = [25, 50, 75, 100] as const;
+	let reported = new Set<number>();
+	let article: HTMLElement | null = null;
+
+	const arm = () => {
+		reported = new Set();
+		article = document.querySelector('main article');
+	};
+
+	const onScroll = () => {
+		if (!article) return;
+		const rect = article.getBoundingClientRect();
+		if (rect.height <= 0) return;
+		/* 视口底边相对正文的进度：底边贴正文顶 = 0%，贴正文底 = 100% */
+		const seen = Math.min(
+			rect.height,
+			Math.max(0, window.innerHeight - rect.top),
+		);
+		const pct = (seen / rect.height) * 100;
+		for (const m of MARKS) {
+			if (pct >= m && !reported.has(m)) {
+				reported.add(m);
+				track('read_depth', { percent: m, slug: location.pathname });
+			}
+		}
+	};
+
+	window.addEventListener('scroll', onScroll, { passive: true });
+	document.addEventListener('astro:page-load', arm);
+	arm();
+</script>

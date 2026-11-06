@@ -35,6 +35,12 @@ interface Props {
 }
 
 const { title, description, image, backToTop = false } = Astro.props;
+
+/* umami 统计，仅生产构建注入 */
+const ENV = import.meta.env as Record<string, string | undefined>;
+const umamiSrc = ENV.PUBLIC_UMAMI_SRC ?? "https://status.stapxs.cn/script.js";
+const umamiSiteId =
+    ENV.PUBLIC_UMAMI_ID ?? "d8f1b578-64ec-4b37-a67e-839c93af9efd";
 ---
 
 <!doctype html>
@@ -49,6 +55,16 @@ const { title, description, image, backToTop = false } = Astro.props;
             pageUrl={Astro.url.href}
             generator={Astro.generator}
         />
+        {/* umami 统计：data-domains */}
+        {import.meta.env.PROD && (
+            <script
+                is:inline
+                defer
+                src={umamiSrc}
+                data-website-id={umamiSiteId}
+                data-domains="blog.stapxs.cn"
+            />
+        )}
         <script is:inline>
             (function () {
                 // 首次加载标记 boot 序列
@@ -130,6 +146,10 @@ const { title, description, image, backToTop = false } = Astro.props;
                             system: "dark",
                         };
                         var next = CYCLE[root.dataset.themeMode] || "dark";
+                        /* umami：主题切换（这里拿到的 next 即切换后的模式；
+                         * is:inline 无法 import helper，直接调全局） */
+                        if (window.umami)
+                            window.umami.track("theme_switch", { to: next });
                         var applyTheme = function () {
                             root.dataset.themeMode = next;
                             root.dataset.theme = resolve(next);
@@ -324,6 +344,12 @@ const { title, description, image, backToTop = false } = Astro.props;
                     if (!input) return;
                     var q = input.value.trim();
                     if (!q) return;
+                    /* umami：搜索面板提交 */
+                    if (window.umami)
+                        window.umami.track("search", {
+                            source: "panel",
+                            keyword: q.slice(0, 100),
+                        });
                     var a = document.createElement("a");
                     a.href = "/search?q=" + encodeURIComponent(q);
                     document.body.appendChild(a);
@@ -600,6 +626,7 @@ const { title, description, image, backToTop = false } = Astro.props;
 
     <script>
         import { blankNode, play } from "../scripts/scramble";
+        import { track } from "../scripts/analytics";
         import { initMusicPlayer } from "../scripts/musicPlayer";
         import { initPhotoLightbox } from "../scripts/photoLightbox";
         import { initPhotosWall } from "../scripts/photosWall";
@@ -1024,5 +1051,46 @@ const { title, description, image, backToTop = false } = Astro.props;
         initPhotoLightbox();
         /* 相簿瀑布流 */
         initPhotosWall();
+
+        /* ================= umami 埋点 ================= */
+        /* 外链点击：绝对地址 http(s) 且非本站域名（友链、GitHub、
+         * status、文章内 demo / 链接卡片等，一处委托全覆盖） */
+        document.addEventListener("click", (e) => {
+            const el = e.target as HTMLElement | null;
+            const a = el?.closest?.("a[href]");
+            if (!a) return;
+            const href = a.getAttribute("href") ?? "";
+            if (!/^https?:\/\//i.test(href)) return;
+            let url: URL;
+            try {
+                url = new URL(href, location.href);
+            } catch {
+                return;
+            }
+            if (url.hostname === location.hostname) return;
+            track("outbound", { host: url.hostname, url: href.slice(0, 300) });
+        });
+
+        /* 翻页：列表页与搜索页的分页器都是 nav[data-boot="static"] */
+        const pageFromHref = (href: string): number | null => {
+            try {
+                const u = new URL(href, location.href);
+                const q = u.searchParams.get("p") ?? u.searchParams.get("page");
+                if (q && /^\d+$/.test(q)) return Number(q);
+                if (u.pathname === "/") return 1; // 列表页第 1 页即根路径
+                const m = u.pathname.match(/\/(\d+)\/?$/);
+                if (m) return Number(m[1]);
+            } catch {
+                /* 非法 href 不上报 */
+            }
+            return null;
+        };
+        document.addEventListener("click", (e) => {
+            const el = e.target as HTMLElement | null;
+            const a = el?.closest?.("a");
+            if (!a || !a.closest('nav[data-boot="static"]')) return;
+            const page = pageFromHref(a.getAttribute("href") ?? "");
+            if (page !== null) track("pagination", { page });
+        });
     </script>
 </html>

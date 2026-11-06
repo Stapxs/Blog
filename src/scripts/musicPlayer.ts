@@ -7,6 +7,7 @@
  * ============================================================ */
 
 import { play } from "./scramble";
+import { track } from "./analytics";
 
 /* ---------- 小工具 ---------- */
 
@@ -487,7 +488,15 @@ function renderPlaylist(box: HTMLElement, tracks: PlaylistTrack[]) {
         row.dataset.track = "";
         row.dataset.id = String(t.id);
         row.title = labelOf(t);
-        row.addEventListener("click", () => void playTrack(t));
+        row.addEventListener("click", () => {
+            /* umami：面板播放列表点播（自动连播 / prev / next 不计入） */
+            track("music_play", {
+                source: "panel",
+                song: t.name.slice(0, 100),
+                id: t.id,
+            });
+            void playTrack(t);
+        });
 
         const cover = document.createElement("div");
         cover.dataset.cover = "";
@@ -582,6 +591,12 @@ export function initMusicPlayer() {
         if (!btn) return;
         const id = Number(btn.dataset.songId);
         if (!id) return;
+        /* umami：文章内关联歌曲点播 */
+        track("music_play", {
+            source: "post",
+            song: (btn.dataset.songName ?? "未知曲目").slice(0, 100),
+            id,
+        });
         queueAndPlay({
             id,
             name: btn.dataset.songName ?? "未知曲目",
