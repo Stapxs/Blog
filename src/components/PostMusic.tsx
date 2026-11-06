@@ -4,7 +4,7 @@
 
 import { Play } from 'pixelarticons/react';
 import styles from './PostMusic.module.css';
-import type { SongBrief } from '../../scripts/songDetail';
+import type { SongBrief } from '../scripts/songDetail';
 
 interface Props {
 	song: SongBrief;

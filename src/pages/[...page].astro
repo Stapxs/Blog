@@ -1,19 +1,22 @@
 ---
-import { getCollection } from "astro:content";
+import type { GetStaticPaths, Page } from "astro";
+import { getCollection, type CollectionEntry } from "astro:content";
 import BlogIndex from "../components/pages/BlogIndex";
 import type { BlogIndexPost } from "../components/pages/BlogIndex";
 import Root from "../layouts/Root.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 import { formatDateLocal } from "../scripts/datetime";
 
-export async function getStaticPaths({ paginate }) {
+export const getStaticPaths: GetStaticPaths = async ({ paginate }) => {
     const posts = (await getCollection("blog"))
         .filter((p) => !p.data.hidden)
         .sort(
         (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
     );
     return paginate(posts, { pageSize: 7 });
-}
+};
+
+type Props = { page: Page<CollectionEntry<"blog">> };
 
 const { page } = Astro.props;
 

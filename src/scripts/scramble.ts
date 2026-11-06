@@ -35,9 +35,10 @@ function isWide(ch: string): boolean {
 function collectTextNodes(el: Node, out: Text[] = []): Text[] {
 	el.childNodes.forEach((n) => {
 		if (n.nodeType === Node.TEXT_NODE) {
-			if (n.nodeValue !== ' ') {
-				n.nodeValue = (n.nodeValue as string).replace(/(\n|\r|\t)/gm, '');
-				out.push(n as Text);
+			const t = n as Text;
+			if (t.data !== ' ') {
+				t.data = t.data.replace(/(\n|\r|\t)/gm, '');
+				out.push(t);
 			}
 		} else {
 			collectTextNodes(n, out);
@@ -66,17 +67,17 @@ const originals = new WeakMap<HTMLElement, Map<Text, string>>();
 export function blankNode(node: HTMLElement): void {
 	const nodes = collectTextNodes(node);
 	const saved = new Map<Text, string>();
-	for (const n of nodes) saved.set(n, n.nodeValue as string);
+	for (const n of nodes) saved.set(n, n.data);
 	originals.set(node, saved);
-	const lens = nodes.map((n) => n.nodeValue.length);
-	const text = nodes.map((n) => n.nodeValue).join('');
+	const lens = nodes.map((n) => n.data.length);
+	const text = nodes.map((n) => n.data).join('');
 	const blank = text
 		.split(' ')
 		.map((w) => [...w].map((ch) => (isWide(ch) ? WIDE_SPACE : NBSP)).join(''))
 		.join(' ');
 	let off = 0;
 	nodes.forEach((n, i) => {
-		n.nodeValue = blank.slice(off, off + lens[i]);
+		n.data = blank.slice(off, off + lens[i]);
 		off += lens[i];
 	});
 }
@@ -88,7 +89,7 @@ export function restoreNode(node: HTMLElement): void {
 	const nodes = collectTextNodes(node);
 	for (const n of nodes) {
 		const text = saved.get(n);
-		if (text !== undefined) n.nodeValue = text;
+		if (text !== undefined) n.data = text;
 	}
 	originals.delete(node);
 }
@@ -106,8 +107,8 @@ export interface ScrambleOptions {
  * 入场 p: 0→1；离场 p: 1→0。 */
 function scramble(node: HTMLElement, { duration = 1000, delay = 0, reverse = false, absolute = false, pointerEvents = true } = {}) {
 	const nodes = collectTextNodes(node);
-	const lens = nodes.map((n) => n.nodeValue.length);
-	const text = nodes.map((n) => n.nodeValue).join(''); // 完整真实文本
+	const lens = nodes.map((n) => n.data.length);
+	const text = nodes.map((n) => n.data).join(''); // 完整真实文本
 	const blank = text // 与原文同构的空白模板
 		.split(' ')
 		.map((w) => [...w].map((ch) => (isWide(ch) ? WIDE_SPACE : NBSP)).join(''))
@@ -162,7 +163,7 @@ function scramble(node: HTMLElement, { duration = 1000, delay = 0, reverse = fal
 			// 5) 按原长度切回每个文本节点 → 嵌套的 <em>/<span> 等结构完好无损
 			let off = 0;
 			nodes.forEach((n, i) => {
-				n.nodeValue = out.slice(off, off + lens[i]);
+				n.data = out.slice(off, off + lens[i]);
 				off += lens[i];
 			});
 		},

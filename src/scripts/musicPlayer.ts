@@ -34,7 +34,7 @@ const setText = (id: string, text: string) => {
 let ctx: AudioContext | null = null;
 let audioEl: HTMLAudioElement;
 let analyser: AnalyserNode;
-let freqData: Uint8Array;
+let freqData: Uint8Array<ArrayBuffer>;
 let gainNode: GainNode;
 
 let v = parseInt(localStorage.getItem("music-volume") ?? "") || 100;
