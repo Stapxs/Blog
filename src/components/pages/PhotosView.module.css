@@ -1,7 +1,7 @@
 /* 相簿页：CSS 多列瀑布流 */
 
 .wall {
-	margin: 0.8em 0 0;
+	margin: 0.8em 0 4em 0;
 	columns: 300px 3;
 	column-gap: 1em;
 }
