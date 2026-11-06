@@ -159,5 +159,6 @@ IMG_0544|某次旅行拍的照片
 
 ## 🎉 鸣谢
 
-- [Astro](https://astro.build) 及其博客模板（主题样式基于 [Bear Blog](https://github.com/HermanMartinus/bearblog/)）
+- [Astro](https://astro.build) 及其博客模板
 - [musicforprogramming.net](https://musicforprogramming.net) —— 音乐播放器灵感来源
+- 本项目部分代码使用 AI 辅助生成

@@ -81,19 +81,21 @@
 	color: inherit;
 }
 
-.iconMoon {
+.iconMoon,
+.iconSun,
+.iconSystem {
+	display: none;
+}
+
+:global(html[data-theme-mode='dark']) .iconMoon {
 	display: block;
 }
 
-.iconSun {
-	display: none;
+:global(html[data-theme-mode='light']) .iconSun {
+	display: block;
 }
 
-:global(html[data-theme='light']) .iconMoon {
-	display: none;
-}
-
-:global(html[data-theme='light']) .iconSun {
+:global(html[data-theme-mode='system']) .iconSystem {
 	display: block;
 }
 

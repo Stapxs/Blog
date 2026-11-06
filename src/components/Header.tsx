@@ -7,6 +7,7 @@ import {
 	Github,
 	Images,
 	Label,
+	Monitor,
 	Moon,
 	Rss,
 	Search,
@@ -77,6 +78,7 @@ export default function Header({ siteTitle, currentPath }: Props) {
 					<button type="button" id="theme-toggle" className={styles.iconButton} aria-label="切换主题">
 						<Moon className={styles.iconMoon} width={24} height={24} aria-hidden="true" />
 						<Sun className={styles.iconSun} width={24} height={24} aria-hidden="true" />
+						<Monitor className={styles.iconSystem} width={24} height={24} aria-hidden="true" />
 					</button>
 					<a href="https://status.stapxs.cn/share/lK6BSgpK8QJbYmke/blog.stapxs.cn" target="_blank">
 						<span className="sr-only">Site status / 统计</span>
