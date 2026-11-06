@@ -5,3 +5,8 @@
 	text-align: center;
 	font-size: 15px;
 }
+
+.sep {
+	margin: 0 0.6em;
+	opacity: 0.6;
+}
