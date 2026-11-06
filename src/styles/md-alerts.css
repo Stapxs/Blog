@@ -1,0 +1,50 @@
+/* ============ GitHub Alerts ============ */
+
+.md-alert-note {
+	--mda: var(--blue);
+}
+.md-alert-tip {
+	--mda: var(--green);
+}
+.md-alert-important {
+	--mda: var(--purple);
+}
+.md-alert-warning {
+	--mda: var(--orange);
+}
+.md-alert-caution {
+	--mda: var(--red);
+}
+
+blockquote.md-alert {
+	margin: 0.8em 0;
+	padding: 0.6em 0.9em;
+	border-left: 4px solid;
+	border-color: var(--mda);
+	background: color-mix(in srgb, var(--mda) 12%, transparent);
+	font-size: 1em;
+}
+
+blockquote.md-alert > p {
+	margin: 0 0 0.5em;
+}
+
+blockquote.md-alert > p:last-child {
+	margin-bottom: 0;
+}
+
+.md-alert-title {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	margin-bottom: 0.4em;
+	color: var(--mda);
+	font-family: var(--font-pixel);
+	font-size: 0.85em;
+	line-height: 1;
+}
+
+.md-alert-title span {
+	font-size: 1.2em;
+	line-height: 1;
+}

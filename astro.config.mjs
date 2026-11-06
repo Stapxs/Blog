@@ -4,6 +4,9 @@ import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
+import { satteri } from '@astrojs/markdown-satteri';
+import { linkCards, linkCardsAssets } from './plugins/link-cards/index.mjs';
+import { mdAlerts } from './plugins/markdown-alerts/index.mjs';
 import { generatePhotosJson, PHOTOS_DIR } from './scripts/photos-exif.mjs';
 
 /** @typedef {import('astro').AstroIntegration} AstroIntegration */
@@ -44,7 +47,10 @@ function photosExif() {
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://blog.stapxs.cn',
-	integrations: [react(), mdx(), sitemap(), photosExif()],
+	integrations: [react(), mdx(), sitemap(), photosExif(), linkCardsAssets()],
+	markdown: {
+		processor: satteri({ hastPlugins: [linkCards, mdAlerts] }),
+	},
 	fonts: [
 		{
 			provider: fontProviders.local(),

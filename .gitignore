@@ -23,5 +23,9 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# 相簿元数据：构建期由 photosExif 集成自动生成（astro dev / build 启动时）
+# 相簿元数据
 src/data/photos.json
+
+# 链接卡片
+.cache/
+public/link-cards/

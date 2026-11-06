@@ -33,6 +33,9 @@ jobs:
 
       - name: 构建静态文件
         run: yarn build
+        env:
+          # 链接卡片抓 GitHub API 使用
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: 上传构建产物（dist/）
         uses: actions/upload-artifact@v7

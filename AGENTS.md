@@ -23,6 +23,25 @@ which runs `astro sync && tsc --noEmit --runExternalCode`. `.astro` files are ha
 so `Astro.props` is typed; `getStaticPaths` should be annotated with the `GetStaticPaths`
 type from `astro`.
 
+## Markdown build-time plugins
+
+Two Sätteri hast plugins enhance Markdown rendering at build time (configured in
+`astro.config.mjs` under `markdown.processor`):
+
+- `plugins/link-cards` — GitHub repo / Bilibili video links alone on their line
+  become link cards (see README「链接卡片」).
+- `plugins/markdown-alerts` — GitHub Alerts syntax (`> [!NOTE]` etc.) becomes
+  styled callouts (see README「GitHub Alerts」).
+
+Things to know:
+
+- Link-card data is cached in `.cache/link-cards.json` and card images in
+  `public/link-cards/` (both gitignored).
+- Rendered Markdown is cached by digest in `.astro/data-store.json` (dev) and
+  `node_modules/.astro/data-store.json` (build). After changing anything that
+  affects Markdown rendering (either plugin), delete both files or unchanged
+  `.md` files will keep serving the old HTML.
+
 ## Documentation
 
 Full documentation: https://docs.astro.build

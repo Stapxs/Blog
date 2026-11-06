@@ -1,0 +1,109 @@
+/* ============ 链接卡片 ============
+ * 构建期由 plugins/link-cards 渲染进正文的 GitHub / bilibili 卡片
+ */
+
+.lc {
+	display: flex;
+	align-items: center;
+	gap: 0.8em;
+	margin: 0.8em 0;
+	padding: 0.6em;
+	border: 1px solid var(--blue);
+	background: color-mix(in srgb, var(--blue) 12%, transparent);
+	color: var(--fg);
+	text-decoration: none;
+	transition: background 0.15s ease;
+}
+
+.lc:hover,
+.lc:focus-visible {
+	background: color-mix(in srgb, var(--blue) 18%, transparent);
+	text-decoration: none;
+}
+
+.lc:focus-visible {
+	outline: 2px solid var(--blue);
+	outline-offset: 2px;
+}
+
+/* 左侧主图：有封面用封面（GitHub 自定义 social preview / B 站视频封面），
+ * 否则用头像（GitHub owner / B 站 UP 主） */
+.lc-main {
+	flex: none;
+	box-sizing: border-box;
+	width: 3.2em;
+	height: 3.2em;
+	margin: 0;
+	object-fit: cover;
+	border: 1px solid var(--line);
+	border-radius: 0;
+}
+
+/* 中部信息区 */
+.lc-info {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.15em;
+}
+
+.lc-name {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	min-width: 0;
+}
+
+.lc-mini {
+	flex: none;
+	width: 1.3em;
+	height: 1.3em;
+	margin: 0;
+	border-radius: 0;
+}
+
+.lc-title {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow-wrap: anywhere;
+}
+
+.lc-desc {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow-wrap: anywhere;
+	color: rgb(var(--gray));
+	font-size: 0.9em;
+}
+
+.lc-go {
+	flex: none;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 3.2em;
+	height: 3.2em;
+	padding: 0;
+	background: var(--blue);
+	border: 1px solid var(--blue);
+	color: #000;
+}
+
+html[data-theme='light'] .lc-go {
+	color: #fff;
+}
+
+.lc-go span {
+	font-size: 1.5em;
+	line-height: 1;
+}
+
+.lc:hover .lc-go,
+.lc:focus-visible .lc-go {
+	opacity: 0.85;
+}

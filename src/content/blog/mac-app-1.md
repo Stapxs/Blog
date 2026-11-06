@@ -46,10 +46,9 @@ https://github.com/jordanbaird/Ice
 ![image.png](../../assets/293155285.png)
 
 ### 隐藏托盘图标
-<div class="mac-notice">
-<span>更新注意：</span>
-在 macOS 26 Tahoe 后，可以对所有托盘图标进行是否显示的设置，所以就不太需要这个功能了
-</div>
+> [!TIP]
+> 在 macOS 26 Tahoe 后，可以对所有托盘图标进行是否显示的设置，所以就不太需要这个功能了
+
 有些应用的托盘图标不能隐藏，就只能想办法借助别的工具了——
 当然上面的 Hidden Bar 也有这个功能（但是不好用），总之这边我分成了两个软件来解决这些烦恼。
 这边我选择了 Bartender 5，当然有个坏消息：不开源而且收费；当然，由于它要截图抓取图标，所以会申请录屏权限，有些人会担心隐私问题，这个自己权衡啦。
@@ -139,16 +138,3 @@ https://daisydiskapp.com
 
 ## 啊吧啊吧
 总之，为了有一个良好的使用体验满地找了一大坨软件来解决一些琐碎的需求；总之，爽了（瘫
-
-<style>
-.mac-notice {
-    background: #ffffe0 !important;
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 7px;
-}
-.mac-notice > span {
-    display: block;
-    font-weight: bold;
-}
-</style>

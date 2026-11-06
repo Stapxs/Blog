@@ -38,7 +38,7 @@ export default function PostMusic({ song }: Props) {
 				aria-label={`播放 ${song.name}`}
 				title="播放"
 			>
-				<Play width={28} height={28} aria-hidden="true" />
+			<Play width="1.5em" height="1.5em" aria-hidden="true" />
 			</button>
 		</div>
 	);
