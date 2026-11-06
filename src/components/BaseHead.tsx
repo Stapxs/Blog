@@ -3,8 +3,8 @@ import { SITE_TITLE } from '../consts';
 interface Props {
 	title: string;
 	description: string;
-	/** Image `src` (may be a relative URL, resolved against the page URL). */
-	image: string;
+	/** og:image `src`（可为相对路径，基于页面 URL 解析）；不传则不输出 og:image。 */
+	image?: string;
 	/** Site origin, e.g. `https://example.com`. */
 	site: string;
 	/** Current page pathname, e.g. `/archives/…/`. */
@@ -16,14 +16,13 @@ interface Props {
 
 export default function BaseHead({ title, description, image, site, pathname, pageUrl, generator }: Props) {
 	const canonicalURL = new URL(pathname, site).href;
-	const socialImage = new URL(image, pageUrl).href;
+	const socialImage = image ? new URL(image, pageUrl).href : undefined;
 
 	return (
 		<>
 			{/* Global Metadata */}
 			<meta charSet="utf-8" />
 			<meta name="viewport" content="width=device-width,initial-scale=1" />
-			<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 			<link rel="icon" href="/favicon.ico" />
 			<link rel="sitemap" href="/sitemap-index.xml" />
 			<link
@@ -46,10 +45,13 @@ export default function BaseHead({ title, description, image, site, pathname, pa
 			<meta property="og:url" content={pageUrl} />
 			<meta property="og:title" content={title} />
 			<meta property="og:description" content={description} />
-			<meta property="og:image" content={socialImage} />
+			{socialImage && <meta property="og:image" content={socialImage} />}
 
 			{/* Twitter */}
-			<meta name="twitter:card" content="summary_large_image" />
+			<meta
+				name="twitter:card"
+				content={socialImage ? 'summary_large_image' : 'summary'}
+			/>
 		</>
 	);
 }

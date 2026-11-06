@@ -1,5 +1,7 @@
 ---
 import { type CollectionEntry, getCollection, render } from 'astro:content';
+import type { ImageMetadata } from 'astro';
+import { posix } from 'node:path';
 import BlogPostView from '../../components/pages/BlogPostView';
 import Comments from '../../components/Comments.astro';
 import Root from '../../layouts/Root.astro';
@@ -29,9 +31,59 @@ const wordCount =
 const song = post.data.music
 	? await fetchSongDetail(post.data.music)
 	: undefined;
+
+// og:image：取正文第一张图，无图则不传（页面不输出 og:image）
+const assetImages = import.meta.glob<ImageMetadata>(
+	'../../assets/**/*.{png,jpg,jpeg,webp,gif,avif}',
+	{ eager: true, import: 'default' },
+);
+// glob key（相对本页面）与 post.filePath（相对项目根）统一归一成「相对项目根」的 posix 路径
+const PAGE_REL_DIR = 'src/pages/archives';
+const toRootRel = (p: string) =>
+	posix.normalize(posix.join(PAGE_REL_DIR, p));
+
+// 排除代码块 / 行内代码里的示例图片语法后再匹配第一张 markdown 图片
+const stripCode = (s: string) =>
+	s
+		.replace(/```[\s\S]*?```/g, '')
+		.replace(/`[^`\n]*`/g, '');
+const safeDecode = (s: string) => {
+	try {
+		return decodeURI(s);
+	} catch {
+		return s;
+	}
+};
+
+const firstImageRef = stripCode(post.body ?? '').match(
+	/!\[[^\]]*\]\(\s*([^)\s]+)[^)]*\)/,
+)?.[1];
+
+let ogImage: Pick<ImageMetadata, 'src'> | undefined;
+if (firstImageRef?.startsWith('/')) {
+	// public 目录的站内绝对路径，本身就是可访问 URL
+	ogImage = { src: firstImageRef };
+} else if (firstImageRef && post.filePath) {
+	// 相对 markdown 文件的路径 → 归一后与 glob key 匹配
+	const postPath = posix.isAbsolute(post.filePath)
+		? posix.relative(process.cwd(), post.filePath)
+		: post.filePath;
+	const rootRel = posix.normalize(
+		posix.join(posix.dirname(postPath), safeDecode(firstImageRef)),
+	);
+	const key = Object.keys(assetImages).find(
+		(k) => toRootRel(k) === rootRel,
+	);
+	ogImage = key ? assetImages[key] : undefined;
+}
 ---
 
-<Root title={post.data.title} description={post.data.description} backToTop>
+<Root
+	title={post.data.title}
+	description={post.data.description}
+	backToTop
+	image={ogImage}
+>
 	<BlogPostView
 		location="Archives"
 		title={post.data.title}

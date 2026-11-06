@@ -7,7 +7,6 @@ import FloatActions from "../components/FloatActions";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import musicStyles from "../components/MusicPlayer.module.css";
-import FallbackImage from "../assets/blog-placeholder-1.png";
 import { SITE_TITLE } from "../consts";
 import "../styles/global.css";
 
@@ -27,13 +26,13 @@ import "pixelarticons/fonts/pixelart-icons-font.css";
 interface Props {
     title: string;
     description: string;
-    image?: ImageMetadata;
+    /** og:image（文章页传正文第一张图，其余页面不传）*/
+    image?: Pick<ImageMetadata, "src">;
     /** 文章页：右下角悬浮区显示「回到顶部」按钮。 */
     backToTop?: boolean;
 }
 
-const { title, description, image = FallbackImage, backToTop = false } =
-    Astro.props;
+const { title, description, image, backToTop = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -42,7 +41,7 @@ const { title, description, image = FallbackImage, backToTop = false } =
         <BaseHead
             title={title}
             description={description}
-            image={image.src}
+            image={image?.src}
             site={Astro.site?.href ?? Astro.url.origin}
             pathname={Astro.url.pathname}
             pageUrl={Astro.url.href}
