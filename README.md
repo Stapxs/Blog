@@ -124,7 +124,7 @@ IMG_0544|某次旅行拍的照片
 
 本项目**代码**以 **AGPL-3.0-only** 协议开源。开源协议**仅覆盖代码部分**，不包含仓库中的文章、图片与照片等内容资源 —— 它们的版权见下方[「内容版权声明」](#️-内容版权声明)。
 
-完整协议文本（含附加条款）见 [LICENSE](LICENSE)。
+代码协议全文见 [LICENSE](LICENSE)，附加条款见 [LICENSE-ADDITIONAL](LICENSE-ADDITIONAL.md)。
 
 本项目使用到的部分依赖及其开源协议如下：
 
@@ -155,7 +155,7 @@ IMG_0544|某次旅行拍的照片
 > - Fork 本仓库请仅用于学习代码与搭建参考；公开你自己的仓库之前，请先删除 `src/content` 与 `src/assets`（尤其是 `src/assets/photos`）中的全部内容资源，替换为你自己的内容。
 > - 如果你想基于此博客搭建自己的站点，请只保留代码与主题样式。
 >
-> 完整条款以 [LICENSE](LICENSE) 文件开头的附加条款为准。
+> 完整条款以 [LICENSE-ADDITIONAL](LICENSE-ADDITIONAL.md) 为准。
 
 ## 🎉 鸣谢
 
