@@ -7,10 +7,9 @@ author: '林小槐'
 pubDate: '2020-05-21 21:25'
 updatedDate: '2020-05-21 21:25'
 ---
+![smartisan.png](../../assets/1431355993.png){: class=right}
 
 虽然TNT在Smartisan OS 6.6的时候就已经发布并且可以使用了。但是因为财力等多方面的影响，直到去年年底我才入了一台坚果Pro 2S，直到坚果Pro 3也就是Smartisan OS 7.0发布后，期待了好久好久的Pro 2S更新7.0之后，我才算勉强体验上了 —— Smartisan TNT。所以，这个继承自老罗的，还没有太大妥协的，所谓颠覆PC的东西，到底怎么样呢。
-
-![smartisan.png](../../assets/1431355993.png)
 
 ### 整体
 对于桌面安卓，在如今其实已经有了不少的选择。从Android X86衍生的凤凰系统、Remix OS这种X86平台安卓，到基于Chrome OS的Fyde OS，以及和TNT一样的来自华为、三星等其他厂商的“桌面模式”。桌面安卓在人们并不重视，甚至是所谓没什么用的注视下，一点点的发展着。
@@ -54,13 +53,10 @@ TNT整体外观依旧沿用了老罗的设计，不知道是什么原因，TNT�
 
 ### 尾巴
 乔布斯曾经说过，那些疯狂到自己认为可以改变世界的人，才是真正改变世界的人。即使老罗已经不再了，但我相信总会有人默默的向往着改变世界，因为我们都还活着。TNT还远远不够，这个世界也还远远不够。
-!!!
-<br>
-!!!
-~~~ini
-文章截稿 SOS 版本：
-Smartisan OS 7.0.1.1 （坚果 Pro2S）
-参考资料：
-https://www.bilibili.com/video/BV1vJ411B7tw
-https://www.smartisan.com/tnt/os
-~~~
+
+> [!NOTE]
+> 文章截稿 SOS 版本：
+> Smartisan OS 7.0.1.1 （坚果 Pro2S）
+> 参考资料：
+> https://www.bilibili.com/video/BV1vJ411B7tw
+> https://www.smartisan.com/tnt/os

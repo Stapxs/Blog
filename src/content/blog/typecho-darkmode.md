@@ -13,7 +13,7 @@ updatedDate: '2020-03-27 21:54'
 在 SS 日益完善自己的 BLOG 之后，于是就开始追求起了更多的功能，在瞎逛的时候看到了别人的暗黑模式~~就流下了口水~~，于是自己研究了下，主要分为以下两部分：
 ### 自动切换
 因为现在这个主题其实已经把可用空间排满了，其他地方放开关也不好康，于是就打算直接做成根据时间切换，去查了下 PHP 获取时间，可以这么处理：
-~~~PHP
+~~~php
     date_default_timezone_set('PRC');         //设置时区
     $hour = date('H');   
 ~~~
@@ -28,7 +28,7 @@ updatedDate: '2020-03-27 21:54'
 
 我们可以直接在页面底端加载 CSS 来覆盖页面上面部分的全部 CSS 样式， 保险起见我们用 !important 样式来强制覆盖现有样式，所以我们就可以把上面的自动切换代码和 CSS 加载代码组合起来放在每一页都会被加载的 footer.php （就是底栏）里面，做到覆盖全页面。
 
-~~~PHP
+~~~php
 <?php
     date_default_timezone_set('PRC'); 
     $hour = date('H');   
@@ -40,8 +40,10 @@ updatedDate: '2020-03-27 21:54'
 按照上面的代码，页面将会在晚上 18 点到明天早上 6 点间启用暗黑模式，当然因为加载方式的原因在跨点的时候需要刷新生效。
 ### DarkMode.css
 最后编写用于覆盖页面样式的 “DarkMode.css” 这是最简单的事情，也是最累的活，把页面上所有的元素的 CSS 样式进行重写覆盖，将浅色用深色替换，这儿我用了谷歌 Material Design 开发者工具里的 [Color Tool][3] 进行 Light 颜色和 Dark 颜色的转换。值得一提的是这也是谷歌为数不多可以在国内打开的页面。
+
 ![Color Tool.png](../../assets/270571186.png)
-~~~CSS
+
+~~~css
 /*
 暗黑模式 CSS 样式配置 by Stapx Steve
 适用于 Typecho 主题 illi（预发行版 0.1）/ https://github.com/touchitvoid/illi
@@ -64,7 +66,7 @@ updatedDate: '2020-03-27 21:54'
     ……
 ~~~
 于是，经过一个多小时的整理，SS 写完了用于 illi 主题的暗黑模式 CSS 覆盖文件，如果你恰巧也使用了这个主题，可以直接拿去用：[/usr/themes/illi/css/darkmode.css][5]
-~~~CSS
+~~~css
 /* 主暗黑色调 */
 background-color: #1D1F20 !important;
 /* 辅暗黑色调 */

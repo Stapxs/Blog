@@ -53,7 +53,7 @@ Wallpaper Engine 的壁纸设置项以一个 JSON 文件保存在壁纸目录内
 ```
 这个 JSON 包含了壁纸的全部信息，包括分级、分类、名称、介绍以及完整的设置内容等，当然一般情况下不需要去手动编辑这个文件，因为你可以通过 WE 自带编辑器来生成（不过自动生成的名称会很长很长，不方便后期使用，可以手动修改。）
 
-![3568319299.png](../../assets/2080048007.png)
+![3568319299.png](../../assets/2080048007.png){: class=right}
 
 当然，因为设置页面其实也是基于 HTML 的，所有可以在设置标签里使用大部分 H5 的标签。
 
@@ -95,21 +95,19 @@ if(properties.Ch_OneCl) {
 
 剩下的就是在网页中的操作了。
 
+![165664309.png](../../assets/1546394242.png){: class=right}
+
 ```javascript
-if(properties.ChBkg){
-    image = properties.ChBkg.value;
-    // 获取自定义壁纸
-    document.body.style.backgroundImage = "url('file:///" + image + "')";
-    }
-    if(properties.Ch_OneCl){
-    chat = properties.Ch_OneCl.value;
-    if(chat)
-        $("#chat").show();
-    else
-        $("#chat").hide();
-    }
+if (properties.ChBkg) {
+  image = properties.ChBkg.value;
+  // 获取自定义壁纸
+  document.body.style.backgroundImage = "url('file:///" + image + "')";
+}
+if (properties.Ch_OneCl) {
+  chat = properties.Ch_OneCl.value;
+  if (chat) $("#chat").show();
+  else $("#chat").hide();
+}
 ```
 
 最后你就可以得到一个有着漂亮的设置界面和完善的交互的 Wallpaper Engine 动态壁纸了。
-
-![165664309.png](../../assets/1546394242.png)
