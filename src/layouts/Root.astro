@@ -11,6 +11,7 @@ import { SITE_TITLE } from "../consts";
 import "../styles/global.css";
 import "../styles/link-cards.css";
 import "../styles/md-alerts.css";
+import "../styles/code-blocks.css";
 
 /* 切页幽灵层会把旧页面的元素带进新页面，因此各组页面级样式需要全站常驻 */
 import "../components/pages/BlogIndex.module.css";
@@ -630,6 +631,7 @@ const umamiSiteId =
         import { initMusicPlayer } from "../scripts/musicPlayer";
         import { initPhotoLightbox } from "../scripts/photoLightbox";
         import { initPhotosWall } from "../scripts/photosWall";
+        import { initCodeBlocks } from "../scripts/codeBlocks";
 
         const html = document.documentElement;
         const MOTION_OK = () =>
@@ -1051,10 +1053,12 @@ const umamiSiteId =
         initPhotoLightbox();
         /* 相簿瀑布流 */
         initPhotosWall();
+        /* 代码块复制按钮 */
+        initCodeBlocks();
+        document.addEventListener("astro:after-swap", initCodeBlocks);
 
         /* ================= umami 埋点 ================= */
-        /* 外链点击：绝对地址 http(s) 且非本站域名（友链、GitHub、
-         * status、文章内 demo / 链接卡片等，一处委托全覆盖） */
+        /* 外链点击 */
         document.addEventListener("click", (e) => {
             const el = e.target as HTMLElement | null;
             const a = el?.closest?.("a[href]");

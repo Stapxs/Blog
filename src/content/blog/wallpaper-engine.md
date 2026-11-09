@@ -29,29 +29,26 @@ HTML 由于其静态的实现方式，需要依靠 JS 代码进行操作，比�
 Wallpaper Engine 的壁纸设置项以一个 JSON 文件保存在壁纸目录内，结构基本上如下：
 ```json
 {
-	"contentrating" : "Everyone",
-	"description" : "简介",
-	"file" : "Main.html",
-	"general" : 
-	{
-		"properties" : 
-		{
-			"Ch_OneCl" : 
-			{
-				"fileType" : "image",
-				"order" : 102,
-				"text" : "<br/>",
-				"type" : "file",
-				"value" : ""
-			}
-        }
-    },
-    "preview" : "preview.png",
-	"tags" : [ "Anime" ],
-	"title" : "m'c",
-	"type" : "web",
-	"visibility" : "public",
-	"workshopid" : "1825724280"
+  "contentrating": "Everyone",
+  "description": "简介",
+  "file": "Main.html",
+  "general": {
+    "properties": {
+      "Ch_OneCl": {
+        "fileType": "image",
+        "order": 102,
+        "text": "<br/>",
+        "type": "file",
+        "value": ""
+      }
+    }
+  },
+  "preview": "preview.png",
+  "tags": ["Anime"],
+  "title": "m'c",
+  "type": "web",
+  "visibility": "public",
+  "workshopid": "1825724280"
 }
 ```
 这个 JSON 包含了壁纸的全部信息，包括分级、分类、名称、介绍以及完整的设置内容等，当然一般情况下不需要去手动编辑这个文件，因为你可以通过 WE 自带编辑器来生成（不过自动生成的名称会很长很长，不方便后期使用，可以手动修改。）
@@ -72,7 +69,7 @@ window.wallpaperPropertyListener={
 };
 ```
 
-所有待处理的设置变更都将会在 properties 对象下，可以直接使用 if 来判断：
+所有待处理的设置变更都将会在 ```properties``` 对象下，可以直接使用 if 来判断：
 
 ```javascript
 if(properties.Ch_OneCl) {
@@ -80,7 +77,7 @@ if(properties.Ch_OneCl) {
 }
 ```
 
-那么这些设置变更对象是什么，就像上面的 properties.Ch_OneCl，其实这些设置就是上面提到的 project.json 文件中的 general 下 properties 下的设置控件 JToken 的键名:
+那么这些设置变更对象是什么，就像上面的 ```properties.Ch_OneCl```，其实这些设置就是上面提到的 ```project.json``` 文件中的 ```general``` 下 ```properties``` 下的设置控件 ```JToken``` 的键名:
 
 ```json
 "Ch_OneCl" : 
@@ -94,7 +91,7 @@ if(properties.Ch_OneCl) {
 ```
 
 所以我在上面提到自动生成的名称会很长很长，不方便后期使用，可以手动修改。
-而具体的设置值会在变更对象的 value 中。
+而具体的设置值会在变更对象的 ```value``` 中。
 
 剩下的就是在网页中的操作了。
 

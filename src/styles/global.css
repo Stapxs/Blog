@@ -189,13 +189,14 @@ img {
 }
 code {
 	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
-	border-radius: 2px;
+	background: color-mix(in srgb, var(--green) 12%, transparent);
+	border: 1px solid var(--green);
+	border-radius: 0;
 }
 pre {
 	padding: 1.5em;
 	border-radius: 8px;
-	overflow-x: auto; /* 长代码行横向滚动，不撑破容器 */
+	overflow-x: auto;
 }
 pre > code {
 	all: unset;

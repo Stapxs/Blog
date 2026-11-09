@@ -1,0 +1,132 @@
+/* ============ 代码块 ============
+
+/* ---------- 块容器 ---------- */
+
+pre.astro-code {
+	position: relative;
+	margin: 1.2em 0;
+	padding: 1.2em 1.2em 1.4em;
+	background: var(--shiki-dark-bg, var(--surface));
+	color: var(--shiki-dark, var(--fg));
+	border: 1px solid var(--line);
+	border-radius: 0;
+	box-shadow: 4px 4px 0 rgb(var(--gray-light));
+	font-family: var(--font-pixel);
+	font-size: 0.9em;
+	line-height: 1.6;
+}
+
+pre.astro-code:focus-visible {
+	outline: 1px dashed var(--green);
+	outline-offset: 3px;
+}
+
+pre.astro-code span {
+	color: var(--shiki-dark, inherit);
+}
+
+/* ---------- 亮色主题---------- */
+
+html[data-theme='light'] pre.astro-code {
+	background: var(--shiki-light-bg, var(--surface));
+	color: var(--shiki-light, var(--fg));
+}
+
+html[data-theme='light'] pre.astro-code span {
+	color: var(--shiki-light, inherit);
+}
+
+/* ---------- 语言角标 ---------- */
+
+pre.astro-code:not([data-language='plaintext']) {
+	padding-top: 3.4em;
+}
+
+pre.astro-code::before {
+	content: attr(data-language);
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2.2em;
+	display: flex;
+	align-items: center;
+	padding: 0 3.5em 0 1.2em;
+	border-bottom: 1px solid rgb(var(--gray-light));
+	color: var(--green);
+	font-size: 0.78em;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	pointer-events: none; /* 角标不挡选中 */
+}
+
+/* ---------- 无语言标注块 ---------- */
+
+pre.astro-code[data-language='plaintext']::before {
+	content: none;
+}
+
+/* ---------- 行 ---------- */
+
+pre.astro-code:not([data-language='plaintext']) code {
+	display: block;
+	counter-reset: line;
+}
+
+pre.astro-code:not([data-language='plaintext']) .line {
+	display: block;
+	width: max-content;
+	min-width: 100%;
+	counter-increment: line;
+}
+
+pre.astro-code:not([data-language='plaintext']) .line::before {
+	content: counter(line, decimal-leading-zero);
+	display: inline-block;
+	min-width: 2.6em;
+	margin-right: 1.2em;
+	padding-right: 0.8em;
+	border-right: 1px solid rgb(var(--gray-light));
+	text-align: right;
+	color: rgb(var(--gray));
+	user-select: none; /* 行号不进剪贴板 */
+}
+
+pre.astro-code:not([data-language='plaintext']) .line:nth-child(even) {
+	background: color-mix(in srgb, var(--green) 8%, transparent);
+}
+
+/* ---------- 复制按钮 ---------- */
+
+.code-copy {
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 2.2em;
+	padding: 0 1em;
+	border: none;
+	background: transparent;
+	color: rgb(var(--gray));
+	font-family: var(--font-pixel);
+	font-size: 0.78em;
+	letter-spacing: 0.12em;
+	cursor: pointer;
+}
+
+.code-copy:hover,
+.code-copy:focus-visible {
+	color: var(--green);
+}
+
+.code-copy:focus-visible {
+	outline: 1px dashed var(--green);
+	outline-offset: -3px;
+}
+
+.code-copy:active {
+	transform: translateY(1px);
+}
+
+.code-copy[data-copied] {
+	color: var(--green);
+}

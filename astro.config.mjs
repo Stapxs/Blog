@@ -7,6 +7,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 import { satteri } from '@astrojs/markdown-satteri';
 import { linkCards, linkCardsAssets } from './plugins/link-cards/index.mjs';
 import { mdAlerts } from './plugins/markdown-alerts/index.mjs';
+import { pixelDark, pixelLight } from './plugins/shiki-pixel-themes.mjs';
 import { generatePhotosJson, PHOTOS_DIR } from './scripts/photos-exif.mjs';
 
 /** @typedef {import('astro').AstroIntegration} AstroIntegration */
@@ -50,6 +51,12 @@ export default defineConfig({
 	integrations: [react(), mdx(), sitemap(), photosExif(), linkCardsAssets()],
 	markdown: {
 		processor: satteri({ hastPlugins: [linkCards, mdAlerts] }),
+		/* 代码高亮 */
+		syntaxHighlight: 'shiki',
+		shikiConfig: {
+			themes: { light: pixelLight, dark: pixelDark },
+			defaultColor: false,
+		},
 	},
 	fonts: [
 		{
