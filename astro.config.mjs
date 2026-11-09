@@ -7,6 +7,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 import { satteri } from '@astrojs/markdown-satteri';
 import { linkCards, linkCardsAssets } from './plugins/link-cards/index.mjs';
 import { mdAlerts } from './plugins/markdown-alerts/index.mjs';
+import { mdIal } from './plugins/markdown-ial/index.mjs';
 import { pixelDark, pixelLight } from './plugins/shiki-pixel-themes.mjs';
 import { generatePhotosJson, PHOTOS_DIR } from './scripts/photos-exif.mjs';
 
@@ -50,7 +51,10 @@ export default defineConfig({
 	site: 'https://blog.stapxs.cn',
 	integrations: [react(), mdx(), sitemap(), photosExif(), linkCardsAssets()],
 	markdown: {
-		processor: satteri({ hastPlugins: [linkCards, mdAlerts] }),
+		processor: satteri({
+			// mdAlerts 需要在最前面执行，它的内容物需要保持原样
+			hastPlugins: [mdAlerts, linkCards, mdIal],
+		}),
 		/* 代码高亮 */
 		syntaxHighlight: 'shiki',
 		shikiConfig: {

@@ -33,6 +33,11 @@
 	margin-top: 1.5em;
 	background: var(--surface);
 }
+.content::after {
+  content: "";
+  display: table;
+  clear: both;
+}
 
 .content > :last-child {
 	margin-bottom: 0;

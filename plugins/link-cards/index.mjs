@@ -114,6 +114,25 @@ function aloneOnLine(p, idx) {
 	return true;
 }
 
+/**
+ * 锚点是否在 GitHub Alerts（blockquote.md-alert）里
+ * Alert 内容始终保持原文，不升级卡片
+ * @param {any} node 锚点或其父节点
+ * @param {any} ctx
+ */
+function inMdAlert(node, ctx) {
+	for (let cur = ctx.parent(node); cur; cur = ctx.parent(cur)) {
+		if (cur.type === 'element' && cur.tagName === 'blockquote') {
+			const cls = cur.properties?.className;
+			const list = Array.isArray(cls)
+				? cls
+				: String(cls ?? '').split(/\s+/);
+			if (list.includes('md-alert')) return true;
+		}
+	}
+	return false;
+}
+
 /** 插件本体 */
 export const linkCards = {
 	name: 'stapxs-link-cards',
@@ -127,9 +146,6 @@ export const linkCards = {
 		async visit(node, ctx) {
 			const href = node.properties?.href;
 			if (typeof href !== 'string') return;
-			const gh = matchGitHub(href);
-			const bili = gh ? null : matchBilibili(href);
-			if (!gh && !bili) return;
 
 			// 只在正文段落里升级卡片（标题 / 列表里的链接保持原样）
 			const p = ctx.parent(node);
@@ -137,6 +153,15 @@ export const linkCards = {
 				debug('跳过（非段落）：', href, '→', p?.tagName);
 				return;
 			}
+			// GitHub Alerts 的内容始终保持原文，不升级卡片
+			if (inMdAlert(p, ctx)) {
+				debug('跳过（md-alert 内）：', href);
+				return;
+			}
+			const gh = matchGitHub(href);
+			const bili = gh ? null : matchBilibili(href);
+			if (!gh && !bili) return;
+
 			const idx = ctx.indexOf(node);
 			if (idx === undefined || !aloneOnLine(p, idx)) {
 				debug('跳过（非独占一行）：', href);
