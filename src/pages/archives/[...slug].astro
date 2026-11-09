@@ -1,137 +1,141 @@
 ---
-import { type CollectionEntry, getCollection, render } from 'astro:content';
-import type { ImageMetadata } from 'astro';
-import { posix } from 'node:path';
-import BlogPostView from '../../components/pages/BlogPostView';
-import Comments from '../../components/Comments.astro';
-import Root from '../../layouts/Root.astro';
-import { formatDateLocal } from '../../scripts/datetime';
-import { fetchSongDetail } from '../../scripts/songDetail';
+import { type CollectionEntry, getCollection, render } from "astro:content";
+import type { ImageMetadata } from "astro";
+import { posix } from "node:path";
+import BlogPostView from "../../components/pages/BlogPostView";
+import Comments from "../../components/Comments.astro";
+import Root from "../../layouts/Root.astro";
+import { formatDateLocal } from "../../scripts/datetime";
+import { fetchSongDetail } from "../../scripts/songDetail";
+import { buildToc } from "../../scripts/toc";
 
 export async function getStaticPaths() {
-	const posts = (await getCollection('blog')).filter((p) => !p.data.hidden);
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+    const posts = (await getCollection("blog")).filter((p) => !p.data.hidden);
+    return posts.map((post) => ({
+        params: { slug: post.id },
+        props: post,
+    }));
 }
 
-type Props = CollectionEntry<'blog'>;
+type Props = CollectionEntry<"blog">;
 
 const post = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+
+// 目录（scripts/toc.ts）
+const toc = buildToc(headings);
 
 // 字数统计：CJK 按字计数，英文/数字按词计数
-const body = post.body ?? '';
+const body = post.body ?? "";
 const wordCount =
-	(body.match(/[\u4e00-\u9fff]/g) ?? []).length +
-	(body.match(/[a-zA-Z0-9]+(?:['’-][a-zA-Z0-9]+)*/g) ?? []).length;
+    (body.match(/[\u4e00-\u9fff]/g) ?? []).length +
+    (body.match(/[a-zA-Z0-9]+(?:['’-][a-zA-Z0-9]+)*/g) ?? []).length;
 
 // 关联歌曲（frontmatter music 字段）：构建期取详情，失败静默跳过
 const song = post.data.music
-	? await fetchSongDetail(post.data.music)
-	: undefined;
+    ? await fetchSongDetail(post.data.music)
+    : undefined;
 
 // og:image：取正文第一张图，无图则不传（页面不输出 og:image）
 const assetImages = import.meta.glob<ImageMetadata>(
-	'../../assets/**/*.{png,jpg,jpeg,webp,gif,avif}',
-	{ eager: true, import: 'default' },
+    "../../assets/**/*.{png,jpg,jpeg,webp,gif,avif}",
+    { eager: true, import: "default" },
 );
 // glob key（相对本页面）与 post.filePath（相对项目根）统一归一成「相对项目根」的 posix 路径
-const PAGE_REL_DIR = 'src/pages/archives';
-const toRootRel = (p: string) =>
-	posix.normalize(posix.join(PAGE_REL_DIR, p));
+const PAGE_REL_DIR = "src/pages/archives";
+const toRootRel = (p: string) => posix.normalize(posix.join(PAGE_REL_DIR, p));
 
 // 排除代码块 / 行内代码里的示例图片语法后再匹配第一张 markdown 图片
 const stripCode = (s: string) =>
-	s
-		.replace(/```[\s\S]*?```/g, '')
-		.replace(/`[^`\n]*`/g, '');
+    s.replace(/```[\s\S]*?```/g, "").replace(/`[^`\n]*`/g, "");
 const safeDecode = (s: string) => {
-	try {
-		return decodeURI(s);
-	} catch {
-		return s;
-	}
+    try {
+        return decodeURI(s);
+    } catch {
+        return s;
+    }
 };
 
-const firstImageRef = stripCode(post.body ?? '').match(
-	/!\[[^\]]*\]\(\s*([^)\s]+)[^)]*\)/,
+const firstImageRef = stripCode(post.body ?? "").match(
+    /!\[[^\]]*\]\(\s*([^)\s]+)[^)]*\)/,
 )?.[1];
 
-let ogImage: Pick<ImageMetadata, 'src'> | undefined;
-if (firstImageRef?.startsWith('/')) {
-	// public 目录的站内绝对路径，本身就是可访问 URL
-	ogImage = { src: firstImageRef };
+let ogImage: Pick<ImageMetadata, "src"> | undefined;
+if (firstImageRef?.startsWith("/")) {
+    // public 目录的站内绝对路径，本身就是可访问 URL
+    ogImage = { src: firstImageRef };
 } else if (firstImageRef && post.filePath) {
-	// 相对 markdown 文件的路径 → 归一后与 glob key 匹配
-	const postPath = posix.isAbsolute(post.filePath)
-		? posix.relative(process.cwd(), post.filePath)
-		: post.filePath;
-	const rootRel = posix.normalize(
-		posix.join(posix.dirname(postPath), safeDecode(firstImageRef)),
-	);
-	const key = Object.keys(assetImages).find(
-		(k) => toRootRel(k) === rootRel,
-	);
-	ogImage = key ? assetImages[key] : undefined;
+    // 相对 markdown 文件的路径 → 归一后与 glob key 匹配
+    const postPath = posix.isAbsolute(post.filePath)
+        ? posix.relative(process.cwd(), post.filePath)
+        : post.filePath;
+    const rootRel = posix.normalize(
+        posix.join(posix.dirname(postPath), safeDecode(firstImageRef)),
+    );
+    const key = Object.keys(assetImages).find((k) => toRootRel(k) === rootRel);
+    ogImage = key ? assetImages[key] : undefined;
 }
 ---
 
 <Root
-	title={post.data.title}
-	description={post.data.description}
-	backToTop
-	image={ogImage}
+    title={post.data.title}
+    description={post.data.description}
+    backToTop
+    image={ogImage}
+    toc={toc}
 >
-	<BlogPostView
-		location="Archives"
-		title={post.data.title}
-		author={post.data.author}
-		pubDate={formatDateLocal(post.data.pubDate)}
-		updatedDate={post.data.updatedDate ? formatDateLocal(post.data.updatedDate) : undefined}
-		wordCount={wordCount}
-		song={song ?? undefined}
-	>
-		<Content />
-	</BlogPostView>
-	<Comments />
+    <BlogPostView
+        location="Archives"
+        title={post.data.title}
+        author={post.data.author}
+        pubDate={formatDateLocal(post.data.pubDate)}
+        updatedDate={
+            post.data.updatedDate
+                ? formatDateLocal(post.data.updatedDate)
+                : undefined
+        }
+        wordCount={wordCount}
+        song={song ?? undefined}
+    >
+        <Content />
+    </BlogPostView>
+    <Comments />
 </Root>
 
 <script>
-	/* umami：文章阅读深度 —— 滚动进度到 25/50/75/100% 各上报一次。
-	 * main > article 仅文章页存在，其余页面监听空转；
-	 * ClientRouter 切页后由 astro:page-load 重新锁定正文元素 */
-	import { track } from '../../scripts/analytics';
+    /* umami：文章阅读深度 —— 滚动进度到 25/50/75/100% 各上报一次。
+     * main > article 仅文章页存在，其余页面监听空转；
+     * ClientRouter 切页后由 astro:page-load 重新锁定正文元素 */
+    import { track } from "../../scripts/analytics";
 
-	const MARKS = [25, 50, 75, 100] as const;
-	let reported = new Set<number>();
-	let article: HTMLElement | null = null;
+    const MARKS = [25, 50, 75, 100] as const;
+    let reported = new Set<number>();
+    let article: HTMLElement | null = null;
 
-	const arm = () => {
-		reported = new Set();
-		article = document.querySelector('main article');
-	};
+    const arm = () => {
+        reported = new Set();
+        article = document.querySelector("main article");
+    };
 
-	const onScroll = () => {
-		if (!article) return;
-		const rect = article.getBoundingClientRect();
-		if (rect.height <= 0) return;
-		/* 视口底边相对正文的进度：底边贴正文顶 = 0%，贴正文底 = 100% */
-		const seen = Math.min(
-			rect.height,
-			Math.max(0, window.innerHeight - rect.top),
-		);
-		const pct = (seen / rect.height) * 100;
-		for (const m of MARKS) {
-			if (pct >= m && !reported.has(m)) {
-				reported.add(m);
-				track('read_depth', { percent: m, slug: location.pathname });
-			}
-		}
-	};
+    const onScroll = () => {
+        if (!article) return;
+        const rect = article.getBoundingClientRect();
+        if (rect.height <= 0) return;
+        /* 视口底边相对正文的进度：底边贴正文顶 = 0%，贴正文底 = 100% */
+        const seen = Math.min(
+            rect.height,
+            Math.max(0, window.innerHeight - rect.top),
+        );
+        const pct = (seen / rect.height) * 100;
+        for (const m of MARKS) {
+            if (pct >= m && !reported.has(m)) {
+                reported.add(m);
+                track("read_depth", { percent: m, slug: location.pathname });
+            }
+        }
+    };
 
-	window.addEventListener('scroll', onScroll, { passive: true });
-	document.addEventListener('astro:page-load', arm);
-	arm();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("astro:page-load", arm);
+    arm();
 </script>

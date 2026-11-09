@@ -7,7 +7,9 @@ import FloatActions from "../components/FloatActions";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import musicStyles from "../components/MusicPlayer.module.css";
+import TocPanel from "../components/TocPanel.astro";
 import { SITE_TITLE } from "../consts";
+import type { TocItem } from "../scripts/toc";
 import "../styles/global.css";
 import "../styles/link-cards.css";
 import "../styles/md-alerts.css";
@@ -30,13 +32,15 @@ import "pixelarticons/fonts/pixelart-icons-font.css";
 interface Props {
     title: string;
     description: string;
-    /** og:image（文章页传正文第一张图，其余页面不传）*/
+    /** og:image*/
     image?: Pick<ImageMetadata, "src">;
-    /** 文章页：右下角悬浮区显示「回到顶部」按钮。 */
+    /** 回到顶部按钮 */
     backToTop?: boolean;
+    /** 目录 */
+    toc?: TocItem[];
 }
 
-const { title, description, image, backToTop = false } = Astro.props;
+const { title, description, image, backToTop = false, toc } = Astro.props;
 
 /* umami 统计，仅生产构建注入 */
 const ENV = import.meta.env as Record<string, string | undefined>;
@@ -621,8 +625,9 @@ const umamiSiteId =
                 <p class={musicStyles.empty}>加载中 …</p>
             </div>
         </div>
+        {toc && toc.length > 0 && <TocPanel items={toc} />}
         <slot />
-        <FloatActions backToTop={backToTop} />
+        <FloatActions backToTop={backToTop} toc={toc} />
         <Footer />
     </body>
 
@@ -633,6 +638,7 @@ const umamiSiteId =
         import { initPhotoLightbox } from "../scripts/photoLightbox";
         import { initPhotosWall } from "../scripts/photosWall";
         import { initCodeBlocks } from "../scripts/codeBlocks";
+        import { initToc } from "../scripts/toc";
 
         const html = document.documentElement;
         const MOTION_OK = () =>
@@ -1057,6 +1063,9 @@ const umamiSiteId =
         /* 代码块复制按钮 */
         initCodeBlocks();
         document.addEventListener("astro:after-swap", initCodeBlocks);
+        /* 文章目录 */
+        initToc();
+        document.addEventListener("astro:after-swap", initToc);
 
         /* ================= umami 埋点 ================= */
         /* 外链点击 */

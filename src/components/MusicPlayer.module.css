@@ -27,6 +27,10 @@
 	transform: none;
 }
 
+:global(body:has(#toc-toggle)) .panel {
+	bottom: 9.75em;
+}
+
 /* 标题压上边框居中 */
 .title {
 	position: absolute;

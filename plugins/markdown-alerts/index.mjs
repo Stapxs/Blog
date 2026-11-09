@@ -4,9 +4,8 @@
  *   > [!NOTE]
  *   > 内容
  *
- * 支持 NOTE / TIP / IMPORTANT / WARNING / CAUTION（大小写不敏感），
- * 渲染成带语义类的 blockquote。
- * 引用块里的软换行（单回车）会转成 <br>，多行书写的内容保持换行。
+ * 支持 NOTE / TIP / IMPORTANT / WARNING / CAUTION
+ * 引用块里的软换行（单回车）会转成 <br>
  */
 
 const ICONS = {

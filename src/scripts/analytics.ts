@@ -22,6 +22,7 @@ export const EVENTS = [
 	'read_depth',
 	'music_play',
 	'photo_view',
+	'toc_jump',
 	'outbound',
 	'theme_switch',
 	'pagination',

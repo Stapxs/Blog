@@ -1,0 +1,40 @@
+---
+/**
+ * 文章目录面板
+ */
+
+import type { TocItem } from "../scripts/toc";
+import styles from "./TocPanel.module.css";
+
+interface Props {
+    items: TocItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav id="toc-panel" class={styles.panel} aria-label="目录" aria-hidden="true">
+    <span class={styles.title}>目录</span>
+    <!-- 可滚动列表：data-hover-list 接入全站统一的悬停行高亮 -->
+    <div class={styles.list} data-hover-list>
+        <span class={styles.hoverBar} data-hover-bar=""></span>
+        {items.map((item) => (
+            <div class={styles.item}>
+                <a class={styles.link} href={`#${item.slug}`}>
+                    {item.text}
+                </a>
+                {item.children.length > 0 && (
+                    <div class={styles.sub}>
+                        {item.children.map((child) => (
+                            <div class={styles.item}>
+                                <a class={styles.link} href={`#${child.slug}`}>
+                                    {child.text}
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        ))}
+    </div>
+</nav>

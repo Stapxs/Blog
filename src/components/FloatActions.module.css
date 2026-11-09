@@ -114,3 +114,21 @@
 		transition: none;
 	}
 }
+
+/* ============ 文章目录 ============ */
+
+.toc {
+	position: absolute;
+	right: 1em;
+	bottom: calc(100% + 0.75em);
+}
+
+.toc:hover,
+.toc[aria-expanded='true'] {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.toc:focus-visible {
+	outline-color: var(--accent);
+}

@@ -1,21 +1,19 @@
-import { ArrowUp, Music } from 'pixelarticons/react';
+import { ArrowUp, Bulletlist, Music } from 'pixelarticons/react';
 import styles from './FloatActions.module.css';
+import type { TocItem } from '../scripts/toc';
 
 interface Props {
-	/** 显示「回到顶部」按钮（仅文章页开启）。 */
+	/** 显示「回到顶部」按钮 */
 	backToTop?: boolean;
+	/** 文章目录 */
+	toc?: TocItem[];
 }
 
 /**
- * 页面右下角悬浮操作区（横排方形按钮）。
- * 必须作为 main 之后的 body 直接子元素渲染（见 Root.astro）：
- * 横向贴页面右缘；纵向 sticky 悬浮于视口底部，
- * 自然位置经负 margin 拉回 main 底边缘 —— 最多只显示到 main 的最底部。
- *
- * 回到顶部按钮带 main 滚动进度指示（由 Root.astro 模块脚本驱动）：
- * 2px 描边沿按钮周缘顺时针行进。
+ * 页面右下角悬浮操作区
  */
-export default function FloatActions({ backToTop = false }: Props) {
+export default function FloatActions({ backToTop = false, toc }: Props) {
+	const hasToc = (toc?.length ?? 0) > 0;
 	return (
 		<div className={styles.dock} data-boot="dock">
 			{backToTop && (
@@ -39,6 +37,19 @@ export default function FloatActions({ backToTop = false }: Props) {
 							strokeDashoffset={100}
 						/>
 					</svg>
+				</button>
+			)}
+			{hasToc && (
+				<button
+					type="button"
+					id="toc-toggle"
+					className={`${styles.button} ${styles.toc}`}
+					aria-label="目录"
+					title="目录"
+					aria-expanded="false"
+					aria-controls="toc-panel"
+				>
+					<Bulletlist width={24} height={24} aria-hidden="true" />
 				</button>
 			)}
 			<button
