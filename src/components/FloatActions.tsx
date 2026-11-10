@@ -10,7 +10,7 @@ interface Props {
 }
 
 /**
- * 页面右下角悬浮操作区
+ * 悬浮操作区
  */
 export default function FloatActions({ backToTop = false, toc }: Props) {
 	const hasToc = (toc?.length ?? 0) > 0;
@@ -26,9 +26,6 @@ export default function FloatActions({ backToTop = false, toc }: Props) {
 				>
 					<ArrowUp width={24} height={24} aria-hidden="true" />
 					<svg className={styles.ring} viewBox="0 0 100 100" aria-hidden="true">
-						{/* pathLength=100：dashoffset 即剩余长度（100=空，0=画满）；
-						    路径自左上角顺时针一圈。注意按钮里还有图标 svg ——
-						    脚本靠 data-backtop-path 精确命中本 path，别用标签选择器 */}
 						<path
 							data-backtop-path
 							d="M1 1H99V99H1Z"

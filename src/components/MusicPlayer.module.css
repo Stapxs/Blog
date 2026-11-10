@@ -4,10 +4,10 @@
 	position: fixed;
 	height: calc(65vh / var(--page-zoom));
 	top: auto;
-	bottom: 6em;
+	bottom: 1.5em;
 	left: auto;
 	width: 350px;
-	right: 1em;
+	right: 4.75em;
 	z-index: 150;
 	box-sizing: border-box;
 	display: flex;
@@ -25,10 +25,6 @@
 :global(html.music-open) .panel {
 	visibility: visible;
 	transform: none;
-}
-
-:global(body:has(#toc-toggle)) .panel {
-	bottom: 9.75em;
 }
 
 /* 标题压上边框居中 */
@@ -291,8 +287,14 @@
 
 @media (max-width: 1419px) {
 	.panel {
-		width: min(350px, calc(100vw / var(--page-zoom) - 3em));
+		width: min(350px, calc(100vw / var(--page-zoom) - 6.75em));
 	}
+}
+
+@media (max-width: 720px) {
+    .panel {
+        width: calc(100% - 7em);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

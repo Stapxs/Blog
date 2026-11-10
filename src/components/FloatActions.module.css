@@ -1,16 +1,23 @@
 .dock {
 	position: sticky;
 	bottom: 1.5em;
-	z-index: 10;
+	z-index: 160;
 	display: flex;
-	justify-content: flex-end;
+	flex-direction: column;
+	align-items: flex-end;
 	gap: 0.75em;
-	/* 距页面右缘的留白（与底部 1.5em 对称） */
 	padding-right: 1em;
 	margin-top: -3em;
-	/* 满宽横条悬于内容上方，空区域不拦截点击 */
 	pointer-events: none;
 	transform: translateY(-2px);
+}
+
+.dock:has(> :nth-child(2)) {
+	margin-top: -6.75em;
+}
+
+.dock:has(> :nth-child(3)) {
+	margin-top: -10.5em;
 }
 
 .button {
@@ -40,9 +47,6 @@
 	outline-offset: 2px;
 }
 
-/* ============ 回到顶部：main 滚动进度描边 ============ */
-/* 进度描边：铺满按钮、贴着边框行进（覆盖 1px 灰边框形成「填充」效果）；
- * 虚线绘制长度由 Root.astro 模块脚本按进度写入 dashoffset */
 .ring {
 	position: absolute;
 	inset: 0;
@@ -57,11 +61,9 @@
 	stroke-width: 4;
 }
 
-/* ============ 按钮个性配色 ============ */
 .top {
 	opacity: 0;
 	visibility: hidden;
-	/* 隐藏时不可交互；置于 .button 规则之后以覆盖其 auto */
 	pointer-events: none;
 	transition:
 		opacity 0.25s ease,
@@ -115,13 +117,13 @@
 	}
 }
 
-/* ============ 文章目录 ============ */
-
-.toc {
-	position: absolute;
-	right: 1em;
-	bottom: calc(100% + 0.75em);
+@media (max-width: 720px) {
+    .dock {
+        gap: 0;
+    }
 }
+
+/* ============ 文章目录 ============ */
 
 .toc:hover,
 .toc[aria-expanded='true'] {

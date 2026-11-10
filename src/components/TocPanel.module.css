@@ -3,14 +3,13 @@
 .panel {
 	position: fixed;
 	top: auto;
-	bottom: 9.75em;
-	right: 1em;
+	bottom: 1.5em;
+	right: 4.75em;
 	z-index: 150;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
 	width: 350px;
-	max-width: calc(100vw / var(--page-zoom) - 3em);
 	max-height: calc(60vh / var(--page-zoom));
 	padding: 1.5em 1.4em 1em;
 	background: var(--bg);
@@ -121,6 +120,18 @@
 .sub .link:hover::before,
 .sub .link[data-active]::before {
 	content: '-';
+}
+
+@media (max-width: 1419px) {
+	.panel {
+		width: min(350px, calc(100vw / var(--page-zoom) - 6.75em));
+	}
+}
+
+@media (max-width: 720px) {
+    .panel {
+        width: calc(100% - 7em);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
