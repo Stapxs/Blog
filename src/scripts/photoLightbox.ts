@@ -1,6 +1,7 @@
 import styles from '../components/pages/PhotosView.module.css';
 import { play } from './scramble';
 import { track } from './analytics';
+import { textMotionOk } from './settings';
 
 /* 照片灯箱 */
 
@@ -124,7 +125,7 @@ function openLightbox(a: HTMLAnchorElement) {
 	prevOverflow = document.documentElement.style.overflow;
 	document.documentElement.style.overflow = 'hidden';
 
-	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+	if (textMotionOk()) {
 		play(info, { duration: 900, delay: 150 });
 	}
 }

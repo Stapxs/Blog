@@ -8,6 +8,7 @@ import { SITE_TITLE } from "../consts";
     <AboutView />
     <script>
     import { play } from "../scripts/scramble";
+    import { textMotionOk } from "../scripts/settings";
 
     const HELLO_API =
         "https://api.stapxs.cn/inner/home/sensor.lin_xiao_huai_de_macbook_pro_frontmost_app";
@@ -119,10 +120,7 @@ import { SITE_TITLE } from "../consts";
             }
         }
 
-        if (
-            !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        )
-            play(el, { duration: 800 });
+        if (textMotionOk()) play(el, { duration: 800 });
     }
 
     let countdown = REFRESH_S;

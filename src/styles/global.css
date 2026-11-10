@@ -29,8 +29,6 @@
 	--gray: 153, 156, 166;
 	--gray-light: 56, 56, 56;
 	--gray-dark: 255, 255, 255;
-	/* 红底上的前景：暗色主题的红很亮配黑字、亮色主题的红很深配白字
-	 * （方向与 --black 墨色相反） */
 	--red-fg: #000;
 	--box-shadow:
 		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
@@ -62,7 +60,6 @@
 	color: var(--blue);
 }
 
-/* 引号内的字符串参数（awk 脚本等） */
 .cmd-string {
 	color: var(--green);
 }
@@ -72,9 +69,6 @@
 }
 
 /* ============ 首次加载编排（boot 序列） ============ */
-/* html.boot 由 head 内联脚本在首屏渲染前添加；
- * 无 JS / 减弱动效 / 序列结束时移除，一切照常显示。
- * data-boot="static" = 不参与动画的元素（如分页器），boot 期间照常显示 */
 html.boot [data-boot]:not([data-boot='static']) {
 	visibility: hidden;
 	opacity: 0;
@@ -243,7 +237,6 @@ hr {
 }
 
 /* ============ 搜索面板 ============ */
-/* 无遮罩弹层：宽度为正文一半，绿色描边终端风 */
 .search-panel {
 	display: none;
 	position: fixed;
@@ -270,7 +263,6 @@ hr {
 	animation: search-panel-in 0.16s ease;
 }
 
-/* 标题压在上边框上居中：背景色盖住边框线，绿色、略小 */
 .search-title {
 	position: absolute;
 	top: -0.6em;
@@ -317,31 +309,21 @@ hr {
 	}
 }
 
-/* ============ 音乐播放器 ============ */
-/* 面板悬浮叠加在 main 右侧上方（不推移布局，main 保持居中不动）。
- * 播放器区域本身自带 z-index，遮住 main 的右侧部分即可。 */
-
-
 /* ============ 像素圆形指针 ============ */
-/* 8×8 像素圆环 + 中心点，2 倍渲染为 16px（热点圆心）；
-   暗色主题白色、亮色主题黑色。全站统一 —— 覆盖各处原有的
-   pointer / default / text 等系统光标 */
-html {
+html:not(.cursor-off) {
 	cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 8 8' shape-rendering='crispEdges' fill='%23fff'><rect x='2' y='0' width='1' height='1'/><rect x='3' y='0' width='1' height='1'/><rect x='4' y='0' width='1' height='1'/><rect x='5' y='0' width='1' height='1'/><rect x='0' y='1' width='1' height='1'/><rect x='7' y='1' width='1' height='1'/><rect x='0' y='2' width='1' height='1'/><rect x='7' y='2' width='1' height='1'/><rect x='0' y='3' width='1' height='1'/><rect x='3' y='3' width='1' height='1'/><rect x='4' y='3' width='1' height='1'/><rect x='7' y='3' width='1' height='1'/><rect x='0' y='4' width='1' height='1'/><rect x='3' y='4' width='1' height='1'/><rect x='4' y='4' width='1' height='1'/><rect x='7' y='4' width='1' height='1'/><rect x='0' y='5' width='1' height='1'/><rect x='7' y='5' width='1' height='1'/><rect x='0' y='6' width='1' height='1'/><rect x='7' y='6' width='1' height='1'/><rect x='2' y='7' width='1' height='1'/><rect x='3' y='7' width='1' height='1'/><rect x='4' y='7' width='1' height='1'/><rect x='5' y='7' width='1' height='1'/></svg>") 8 8, auto;
 }
 
-html[data-theme='light'] {
+html[data-theme='light']:not(.cursor-off) {
 	cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 8 8' shape-rendering='crispEdges' fill='%23000'><rect x='2' y='0' width='1' height='1'/><rect x='3' y='0' width='1' height='1'/><rect x='4' y='0' width='1' height='1'/><rect x='5' y='0' width='1' height='1'/><rect x='0' y='1' width='1' height='1'/><rect x='7' y='1' width='1' height='1'/><rect x='0' y='2' width='1' height='1'/><rect x='7' y='2' width='1' height='1'/><rect x='0' y='3' width='1' height='1'/><rect x='3' y='3' width='1' height='1'/><rect x='4' y='3' width='1' height='1'/><rect x='7' y='3' width='1' height='1'/><rect x='0' y='4' width='1' height='1'/><rect x='3' y='4' width='1' height='1'/><rect x='4' y='4' width='1' height='1'/><rect x='7' y='4' width='1' height='1'/><rect x='0' y='5' width='1' height='1'/><rect x='7' y='5' width='1' height='1'/><rect x='0' y='6' width='1' height='1'/><rect x='7' y='6' width='1' height='1'/><rect x='2' y='7' width='1' height='1'/><rect x='3' y='7' width='1' height='1'/><rect x='4' y='7' width='1' height='1'/><rect x='5' y='7' width='1' height='1'/></svg>") 8 8, auto;
 }
 
-body,
-body * {
+html:not(.cursor-off) body,
+html:not(.cursor-off) body * {
 	cursor: inherit !important;
 }
 
 /* ============ 点击像素涟漪 ============ */
-/* 一个 4px 网格单元，box-shadow 拼出像素圆环（见 Root.astro 内联脚本）；
-   颜色走主题墨色令牌 */
 .pixel-ripple {
 	position: fixed;
 	width: 4px;

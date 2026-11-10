@@ -10,6 +10,7 @@ import musicStyles from "../components/MusicPlayer.module.css";
 import TocPanel from "../components/TocPanel.astro";
 import { SITE_TITLE } from "../consts";
 import type { TocItem } from "../scripts/toc";
+import WelcomeGate from "../components/WelcomeGate.astro";
 import "../styles/global.css";
 import "../styles/link-cards.css";
 import "../styles/md-alerts.css";
@@ -41,12 +42,6 @@ interface Props {
 }
 
 const { title, description, image, backToTop = false, toc } = Astro.props;
-
-/* umami 统计，仅生产构建注入 */
-const ENV = import.meta.env as Record<string, string | undefined>;
-const umamiSrc = ENV.PUBLIC_UMAMI_SRC ?? "https://status.stapxs.cn/script.js";
-const umamiSiteId =
-    ENV.PUBLIC_UMAMI_ID ?? "d8f1b578-64ec-4b37-a67e-839c93af9efd";
 ---
 
 <!doctype html>
@@ -61,32 +56,39 @@ const umamiSiteId =
             pageUrl={Astro.url.href}
             generator={Astro.generator}
         />
-        {/* umami 统计：data-domains */}
-        {import.meta.env.PROD && (
-            <script
-                is:inline
-                defer
-                src={umamiSrc}
-                data-website-id={umamiSiteId}
-                data-domains="blog.stapxs.cn"
-            />
-        )}
         <script is:inline>
             (function () {
-                // 首次加载标记 boot 序列
-                if (
-                    !window.__bootPlayed &&
-                    !window.matchMedia("(prefers-reduced-motion: reduce)")
-                        .matches
-                ) {
-                    window.__bootPlayed = true;
-                    document.documentElement.classList.add("boot");
+                var reduce = window.matchMedia(
+                    "(prefers-reduced-motion: reduce)",
+                ).matches;
+                // 文本动画开关（基本设置卡；键名与 scripts/settings.ts 一致）
+                var textMotion = true;
+                try {
+                    textMotion = localStorage.getItem("text-motion") !== "off";
+                } catch (e) {}
+
+                var gateOpen = false;
+                try {
+                    gateOpen = !localStorage.getItem("cookie-consent");
+                } catch (e) {}
+                if (gateOpen)
+                    document.documentElement.classList.add("gate-open");
+
+                try {
+                    if (localStorage.getItem("cursor") === "off")
+                        document.documentElement.classList.add("cursor-off");
+                } catch (e) {}
+
+                if (!window.__bootPlayed && !reduce && textMotion) {
+                    if (gateOpen) {
+                        window.__bootPending = true;
+                    } else {
+                        window.__bootPlayed = true;
+                        document.documentElement.classList.add("boot");
+                    }
                 }
 
                 (function () {
-                    /* 主题偏好三态：system（跟随系统，默认）/ light / dark；
-                     * data-theme-mode = 偏好，data-theme = 实际生效主题
-                     * （现有 CSS 与 Waline 均监听后者） */
                     var mq = window.matchMedia("(prefers-color-scheme: dark)");
                     var readPref = function () {
                         var v = null;
@@ -123,7 +125,6 @@ const umamiSiteId =
                     };
                     apply();
                     document.addEventListener("astro:after-swap", apply);
-                    /* 首屏时按钮尚未解析，page-load 后再同步一次无障碍标签 */
                     document.addEventListener("astro:page-load", function () {
                         syncButton(
                             document.documentElement.dataset.themeMode ||
@@ -131,7 +132,6 @@ const umamiSiteId =
                         );
                     });
 
-                    /* 偏好为「跟随系统」时，系统深浅色切换实时生效 */
                     var onSchemeChange = function () {
                         var root = document.documentElement;
                         if ((root.dataset.themeMode || "system") === "system")
@@ -145,15 +145,13 @@ const umamiSiteId =
                         var btn = e.target.closest("#theme-toggle");
                         if (!btn) return;
                         var root = document.documentElement;
-                        /* 循环：暗色 → 亮色 → 跟随系统 → 暗色 */
                         var CYCLE = {
                             dark: "light",
                             light: "system",
                             system: "dark",
                         };
                         var next = CYCLE[root.dataset.themeMode] || "dark";
-                        /* umami：主题切换（这里拿到的 next 即切换后的模式；
-                         * is:inline 无法 import helper，直接调全局） */
+                        /* umami：主题切换 */
                         if (window.umami)
                             window.umami.track("theme_switch", { to: next });
                         var applyTheme = function () {
@@ -472,6 +470,11 @@ const umamiSiteId =
                         return shadows.join(",");
                     };
                     document.addEventListener("pointerdown", function (e) {
+                        // 自定义鼠标开关
+                        try {
+                            if (localStorage.getItem("cursor") === "off")
+                                return;
+                        } catch (err) {}
                         var el = document.createElement("div");
                         el.className = "pixel-ripple";
                         var pz =
@@ -514,6 +517,8 @@ const umamiSiteId =
         <ClientRouter fallback="swap" />
     </head>
     <body>
+        {/* 首访欢迎 */}
+        <WelcomeGate />
         <Header siteTitle={SITE_TITLE} currentPath={Astro.url.pathname} />
         {/* 搜索面板*/}
         <div
@@ -639,13 +644,15 @@ const umamiSiteId =
         import { initPhotosWall } from "../scripts/photosWall";
         import { initCodeBlocks } from "../scripts/codeBlocks";
         import { initToc } from "../scripts/toc";
+        import { initWelcomeGate } from "../scripts/welcomeGate";
+        import { initSettings, textMotionOk } from "../scripts/settings";
 
         const html = document.documentElement;
-        const MOTION_OK = () =>
-            !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const MOTION_OK = textMotionOk;
 
         /* ================= 首次加载 boot 序列 ================= */
-        if (html.classList.contains("boot")) {
+        const runBoot = () => {
+            if (!html.classList.contains("boot")) return;
             const show = (el: Element | null) => el?.classList.add("boot-in");
             const one = (s: string) => document.querySelector(s);
             const all = (s: string) => Array.from(document.querySelectorAll(s));
@@ -692,7 +699,13 @@ const umamiSiteId =
 
             /* 收尾：解除 boot 态；若中途发生页面切换则立即解除 */
             window.setTimeout(() => html.classList.remove("boot"), 5300);
-        }
+        };
+        runBoot();
+
+        /* Cookie 授权 */
+        initWelcomeGate(runBoot);
+        /* 站点偏好 */
+        initSettings();
 
         /* ================= 页面切换编排 ================= */
         const SWAP_KEYS = ["pagetitle", "cmd", "rest"] as const;

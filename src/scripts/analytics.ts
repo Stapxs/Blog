@@ -26,6 +26,8 @@ export const EVENTS = [
 	'outbound',
 	'theme_switch',
 	'pagination',
+	'cookie_consent',
+	'setting_change',
 ] as const;
 
 export type EventName = (typeof EVENTS)[number];

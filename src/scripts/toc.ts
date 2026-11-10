@@ -4,6 +4,7 @@
 
 import { track } from './analytics';
 import { play } from './scramble';
+import { textMotionOk } from './settings';
 
 /** render() 返回的标题元数据（MarkdownHeading） */
 export interface TocHeading {
@@ -79,7 +80,7 @@ const isOpen = (): boolean => panel?.hasAttribute('data-open') ?? false;
 /** 面板打开时的解密入场（与音乐面板同款，只作用于列表） */
 function entrance(): void {
 	if (!panel) return;
-	if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+	if (!textMotionOk()) return;
 	const list = panel.querySelector<HTMLElement>('[data-hover-list]');
 	if (list) play(list, { duration: 900, delay: 300 });
 }

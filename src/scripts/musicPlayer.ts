@@ -8,6 +8,7 @@
 
 import { play } from "./scramble";
 import { track } from "./analytics";
+import { textMotionOk } from "./settings";
 
 /* ---------- 小工具 ---------- */
 
@@ -545,7 +546,7 @@ export function queueAndPlay(track: PlaylistTrack) {
  * ============================================================ */
 
 function panelEntrance() {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!textMotionOk()) return;
     const rows = document.querySelectorAll<HTMLElement>("#music-player > div");
     const playlist = document.getElementById("music-playlist");
     /* 自上而下错峰：传输行 → 时间/音量行 → 播放列表 */
