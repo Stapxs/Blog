@@ -6,6 +6,9 @@
 
 :root {
 	color-scheme: dark;
+	/* iOS Safari 文字自动放大：宽块 + 小字号会被擅自放大，显式关闭 */
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
 	--bg: #1a1a1a;
 	--surface: #232323;
 	--fg: #fff;

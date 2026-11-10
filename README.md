@@ -92,6 +92,20 @@ music: 123456                      # 可选，网易云歌曲 id
 
 其中 `hidden: true` 的文章在列表 / 归档 / 搜索 / RSS / 直链全部不可见，可以放心当草稿用；`music` 会在文章页日期行下方显示一个网易云播放条。
 
+### > 图片排版（IAL 属性语法）
+
+正文里可以用 Kramdown 风格的行内属性列表给图片 / 链接附加 class、id 或内联样式（构建期由 `plugins/markdown-ial` 处理）：
+
+```markdown
+![图片](./a.png){: class=right}
+![图片](./a.png){: .rounded #hero-img style="width:120px"}
+[链接](/about/){: .btn}
+```
+
+内置排版类定义在 `src/styles/article.css`，对所有文章生效：
+
+- `right` —— 图片右浮动（宽 40%、左侧留白 2em；窄屏自动回到全宽文档流）
+
 ### > 添加照片
 
 把照片丢进 `src/assets/photos`（支持子目录嵌套；HEIC 请先导出为 JPEG），构建 / dev 时会自动扫描 EXIF 生成相簿数据。

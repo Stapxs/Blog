@@ -96,17 +96,23 @@ export const mdIal = {
 			const attrs = parseIAL(m[1]);
 			if (!attrs) return;
 
-			// 合并属性（class 追加，其余直接设置）
+			// 合并属性
 			const extraClasses = attrs.className.concat(
 				typeof attrs.class === 'string' && attrs.class
 					? attrs.class.trim().split(/\s+/)
 					: [],
 			);
-			const classes = [
-				...(node.properties?.className ?? []),
-				...extraClasses,
-			];
-			if (classes.length) ctx.setProperty(node, 'className', classes);
+			if (extraClasses.length) {
+				if (node.tagName === 'img') {
+					ctx.setProperty(node, 'class', extraClasses.join(' '));
+				} else {
+					const classes = [
+						...(node.properties?.className ?? []),
+						...extraClasses,
+					];
+					ctx.setProperty(node, 'className', classes);
+				}
+			}
 			for (const [k, v] of Object.entries(attrs)) {
 				if (k === 'className' || k === 'class') continue;
 				ctx.setProperty(node, k, v);
