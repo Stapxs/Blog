@@ -4,6 +4,7 @@
 
 import { play } from './scramble';
 import { track } from './analytics';
+import { syncOverlaySize } from './overlay';
 import {
     applyCursorPref,
     applyThemePref,
@@ -36,6 +37,13 @@ declare global {
 }
 
 const gateEl = () => document.getElementById('welcome-gate');
+
+let detachGateResize: (() => void) | null = null;
+
+function stopGateResize() {
+    detachGateResize?.();
+    detachGateResize = null;
+}
 
 /** 读取授权记录；缺失 / 损坏 / 版本过旧都视为未授权 */
 export function readConsent(): ConsentRecord | null {
@@ -160,6 +168,11 @@ function openGate() {
         lastFocus = document.activeElement as HTMLElement | null;
         root.classList.add('gate-open');
     }
+    const view = gate.querySelector<HTMLElement>('.gateView');
+    if (view) {
+        stopGateResize();
+        detachGateResize = syncOverlaySize(gate, view);
+    }
     document.body.style.overflow = 'hidden';
     resetConfirmState();
     syncSettingsUI();
@@ -255,6 +268,7 @@ function closeGate() {
         root.classList.remove('gate-open');
         gate?.classList.remove('closing');
         document.body.style.overflow = '';
+        stopGateResize();
         lastFocus?.focus?.();
         lastFocus = null;
         if (runBootNow) runBoot?.();
@@ -277,6 +291,7 @@ function syncGate() {
         document.documentElement.classList.remove('gate-open');
         document.body.style.overflow = '';
         gateEl()?.classList.remove('closing');
+        stopGateResize();
     } else {
         openGate();
     }

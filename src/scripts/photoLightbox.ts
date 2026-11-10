@@ -2,18 +2,24 @@ import styles from '../components/pages/PhotosView.module.css';
 import { play } from './scramble';
 import { track } from './analytics';
 import { textMotionOk } from './settings';
+import { syncOverlaySize } from './overlay';
 
 /* 照片灯箱 */
 
 let lightbox: HTMLDivElement | null = null;
 let lightboxBody: HTMLDivElement | null = null;
+let lightboxInner: HTMLDivElement | null = null;
 let prevOverflow = '';
+let detachResize: (() => void) | null = null;
 
 function closeLightbox() {
 	if (!lightbox) return;
 	const el = lightbox;
 	lightbox = null;
 	lightboxBody = null;
+	lightboxInner = null;
+	detachResize?.();
+	detachResize = null;
 	document.documentElement.style.overflow = prevOverflow;
 	el.animate([{ opacity: '1' }, { opacity: '0' }], {
 		duration: 120,
@@ -109,16 +115,22 @@ function openLightbox(a: HTMLAnchorElement) {
 	aside.className = styles.lightboxAside;
 	aside.append(info, hint);
 
+	const inner = document.createElement('div');
+	inner.className = styles.lightboxInner;
+	inner.append(img, loading, aside);
+
 	const body = document.createElement('div');
 	body.className = styles.lightboxBody;
-	body.append(img, loading, aside);
+	body.append(inner);
+
+	detachResize = syncOverlaySize(box, body);
 
 	box.append(body);
 	document.body.append(box);
 	lightbox = box;
 	lightboxBody = body;
+	lightboxInner = inner;
 
-	// 原图命中缓存时 load 事件早已就绪（或不会再触发），直接收掉角标
 	if (img.complete && img.naturalWidth > 0) loading.remove();
 
 	// 弹窗期间锁背景滚动
@@ -136,7 +148,12 @@ export function initPhotoLightbox() {
 		(e) => {
 			const target = e.target as Element;
 
-			if (lightbox && (target === lightbox || target === lightboxBody)) {
+			if (
+				lightbox &&
+				(target === lightbox ||
+					target === lightboxBody ||
+					target === lightboxInner)
+			) {
 				closeLightbox();
 				return;
 			}
@@ -169,6 +186,9 @@ export function initPhotoLightbox() {
 		lightbox?.remove();
 		lightbox = null;
 		lightboxBody = null;
+		lightboxInner = null;
+		detachResize?.();
+		detachResize = null;
 		document.documentElement.style.overflow = prevOverflow;
 	});
 }

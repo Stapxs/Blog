@@ -105,19 +105,29 @@
 	--lb-panel: 288px;
 	--lb-gap: 1em;
 	--lb-pad-x: 1em;
-	position: fixed;
-	inset: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
 	z-index: 300;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 3em var(--lb-pad-x) 2em;
-	box-sizing: border-box;
-	background: rgb(0 0 0 / 85%);
+	background: color-mix(in srgb, var(--bg) 85%, transparent);
 	animation: photos-lightbox-in 0.15s ease;
 }
 
 .lightboxBody {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 100vh; /* 兜底值，openLightbox 会立即覆盖 */
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 3em var(--lb-pad-x) 2em;
+}
+
+.lightboxInner {
 	position: relative; /* 状态角标的定位基准 */
 	display: flex;
 	flex-direction: row;
@@ -245,7 +255,7 @@
         margin-bottom: 4em;
     }
 
-	.lightboxBody {
+	.lightboxInner {
 		flex-direction: column;
 	}
 

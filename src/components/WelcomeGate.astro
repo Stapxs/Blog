@@ -9,178 +9,190 @@
     aria-modal="true"
     aria-label="首次访问设置"
 >
-    <div class="wrap">
-        <div class="gateCmd" data-gate-scramble>
-            <span class="cmd-prompt">&gt;&nbsp;</span>
-            <span class="cmd-name">blog-init&nbsp;</span>
-            <span class="cmd-flag">--first-run</span>
-        </div>
-        <div class="cards">
-            <section
-                class="card cardCookie"
-                data-gate-card="cookie"
-                aria-labelledby="gate-cookie-title"
-            >
-                <h2 class="cardTitle" id="gate-cookie-title">
-                    Cookie 使用授权
-                </h2>
-                <div class="body" data-gate-scramble>
-                    <p class="lead">
-                        站点的正常运行需要在你的浏览器里存储一点点数据：
-                    </p>
-                    <ul class="uses">
-                        <li class="use">
-                            <span class="tag tagNecessary">必要</span>
-                            <p>
-                                偏好记忆：主题等设置，保存在你浏览器的
-                                localStorage 中，不上传任何服务器，始终启用。
-                            </p>
-                        </li>
-                        <li class="use">
-                            <span class="tag tagStats">统计</span>
-                            <p>
-                                访问统计：umami
-                                统计脚本，用于了解页面访问情况；匿名、不跨站追踪，仅在授权后运行。
-                            </p>
-                        </li>
-                    </ul>
-                    <div class="actions">
-                        <button
-                            type="button"
-                            class="btn btnPrimary"
-                            data-gate-accept
-                        >
-                            全部允许
-                        </button>
-                        <button type="button" class="btn" data-gate-essential>
-                            仅保留必要
-                        </button>
+    <div class="gateView">
+        <div class="wrap">
+            <div class="gateCmd" data-gate-scramble>
+                <span class="cmd-prompt">&gt;&nbsp;</span>
+                <span class="cmd-name">blog-init&nbsp;</span>
+                <span class="cmd-flag">--first-run</span>
+            </div>
+            <div class="cards">
+                <section
+                    class="card cardCookie"
+                    data-gate-card="cookie"
+                    aria-labelledby="gate-cookie-title"
+                >
+                    <h2 class="cardTitle" id="gate-cookie-title">
+                        Cookie 使用授权
+                    </h2>
+                    <div class="body" data-gate-scramble>
+                        <p class="lead">
+                            站点的正常运行需要在你的浏览器里存储一点点数据：
+                        </p>
+                        <ul class="uses">
+                            <li class="use">
+                                <span class="tag tagNecessary">必要</span>
+                                <p>
+                                    偏好记忆：主题等设置，保存在你浏览器的
+                                    localStorage
+                                    中，不上传任何服务器，始终启用。
+                                </p>
+                            </li>
+                            <li class="use">
+                                <span class="tag tagStats">统计</span>
+                                <p>
+                                    访问统计：umami
+                                    统计脚本，用于了解页面访问情况；匿名、不跨站追踪，仅在授权后运行。
+                                </p>
+                            </li>
+                        </ul>
+                        <div class="actions">
+                            <button
+                                type="button"
+                                class="btn btnPrimary"
+                                data-gate-accept
+                            >
+                                全部允许
+                            </button>
+                            <button
+                                type="button"
+                                class="btn"
+                                data-gate-essential
+                            >
+                                仅保留必要
+                            </button>
+                        </div>
+                        <!-- 确认回执：替代按钮组显示（文本由脚本写入） -->
+                        <p class="doneNote" data-gate-done-note></p>
+                        <p class="note">
+                            你可以随时通过页脚的齿轮图标重新打开这个窗口。
+                        </p>
                     </div>
-                    <!-- 确认回执：替代按钮组显示（文本由脚本写入） -->
-                    <p class="doneNote" data-gate-done-note></p>
-                    <p class="note">
-                        你可以随时通过页脚的齿轮图标重新打开这个窗口。
-                    </p>
-                </div>
-            </section>
-            <section
-                class="card cardSettings"
-                data-gate-card="settings"
-                aria-labelledby="gate-settings-title"
-            >
-                <h2 class="cardTitle" id="gate-settings-title">
-                    基本设置
-                </h2>
-                <div class="body" data-gate-scramble>
-                    <div class="setting">
-                        <div class="settingText">
-                            <span class="settingName">文本动画</span>
-                            <span class="settingDesc">
-                                如果文本显示效果影响到了性能，可以关闭它
-                            </span>
+                </section>
+                <section
+                    class="card cardSettings"
+                    data-gate-card="settings"
+                    aria-labelledby="gate-settings-title"
+                >
+                    <h2 class="cardTitle" id="gate-settings-title">
+                        基本设置
+                    </h2>
+                    <div class="body" data-gate-scramble>
+                        <div class="setting">
+                            <div class="settingText">
+                                <span class="settingName">文本动画</span>
+                                <span class="settingDesc">
+                                    如果文本显示效果影响到了性能，可以关闭它
+                                </span>
+                            </div>
+                            <div
+                                class="options"
+                                role="group"
+                                aria-label="文本动画"
+                            >
+                                <button
+                                    type="button"
+                                    class="option"
+                                    data-gate-motion="on"
+                                >
+                                    开启
+                                </button>
+                                <button
+                                    type="button"
+                                    class="option"
+                                    data-gate-motion="off"
+                                >
+                                    关闭
+                                </button>
+                            </div>
                         </div>
-                        <div class="options" role="group" aria-label="文本动画">
+                        <div class="setting">
+                            <div class="settingText">
+                                <span class="settingName">暗黑模式</span>
+                                <span class="settingDesc">默认跟随系统</span>
+                            </div>
+                            <div
+                                class="options"
+                                role="group"
+                                aria-label="暗黑模式"
+                            >
+                                <button
+                                    type="button"
+                                    class="option"
+                                    data-gate-theme="system"
+                                >
+                                    跟随系统
+                                </button>
+                                <button
+                                    type="button"
+                                    class="option"
+                                    data-gate-theme="light"
+                                >
+                                    亮色
+                                </button>
+                                <button
+                                    type="button"
+                                    class="option"
+                                    data-gate-theme="dark"
+                                >
+                                    暗色
+                                </button>
+                            </div>
+                        </div>
+                        <div class="setting">
+                            <div class="settingText">
+                                <span class="settingName">自定义指针</span>
+                                <span class="settingDesc">
+                                    像素指针样式与点击涟漪动效
+                                </span>
+                            </div>
+                            <div
+                                class="options"
+                                role="group"
+                                aria-label="自定义指针"
+                            >
+                                <button
+                                    type="button"
+                                    class="option"
+                                    data-gate-cursor="on"
+                                >
+                                    开启
+                                </button>
+                                <button
+                                    type="button"
+                                    class="option"
+                                    data-gate-cursor="off"
+                                >
+                                    关闭
+                                </button>
+                            </div>
+                        </div>
+                        <div class="actions">
                             <button
                                 type="button"
-                                class="option"
-                                data-gate-motion="on"
+                                class="btn btnPrimary"
+                                data-gate-settings-ok
                             >
-                                开启
-                            </button>
-                            <button
-                                type="button"
-                                class="option"
-                                data-gate-motion="off"
-                            >
-                                关闭
+                                确认设置
                             </button>
                         </div>
+                        <!-- 确认回执：替代按钮组显示（文本由脚本写入） -->
+                        <p class="doneNote" data-gate-done-note></p>
                     </div>
-                    <div class="setting">
-                        <div class="settingText">
-                            <span class="settingName">暗黑模式</span>
-                            <span class="settingDesc">默认跟随系统</span>
-                        </div>
-                        <div class="options" role="group" aria-label="暗黑模式">
-                            <button
-                                type="button"
-                                class="option"
-                                data-gate-theme="system"
-                            >
-                                跟随系统
-                            </button>
-                            <button
-                                type="button"
-                                class="option"
-                                data-gate-theme="light"
-                            >
-                                亮色
-                            </button>
-                            <button
-                                type="button"
-                                class="option"
-                                data-gate-theme="dark"
-                            >
-                                暗色
-                            </button>
-                        </div>
-                    </div>
-                    <div class="setting">
-                        <div class="settingText">
-                            <span class="settingName">自定义指针</span>
-                            <span class="settingDesc">
-                                像素指针样式与点击涟漪动效
-                            </span>
-                        </div>
-                        <div
-                            class="options"
-                            role="group"
-                            aria-label="自定义指针"
-                        >
-                            <button
-                                type="button"
-                                class="option"
-                                data-gate-cursor="on"
-                            >
-                                开启
-                            </button>
-                            <button
-                                type="button"
-                                class="option"
-                                data-gate-cursor="off"
-                            >
-                                关闭
-                            </button>
-                        </div>
-                    </div>
-                    <div class="actions">
-                        <button
-                            type="button"
-                            class="btn btnPrimary"
-                            data-gate-settings-ok
-                        >
-                            确认设置
-                        </button>
-                    </div>
-                    <!-- 确认回执：替代按钮组显示（文本由脚本写入） -->
-                    <p class="doneNote" data-gate-done-note></p>
-                </div>
-            </section>
+                </section>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
     .gate {
-        box-sizing: border-box;
-        position: fixed;
-        inset: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
         z-index: 400;
         display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 2em;
-        overflow-y: auto;
         background-color: var(--bg);
         background-image: repeating-linear-gradient(
             0deg,
@@ -193,7 +205,21 @@
 
     :global(html.gate-open) .gate,
     .gate.closing {
+        display: block;
+    }
+
+    .gateView {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100vh; /* 兜底值，脚本会立即覆盖 */
+        box-sizing: border-box;
         display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2em;
+        overflow-y: auto;
     }
 
     .wrap {
@@ -510,7 +536,7 @@
     }
 
     @media (max-width: 720px) {
-        .gate {
+        .gateView {
             padding: 1.2em;
         }
 
