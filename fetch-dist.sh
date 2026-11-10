@@ -7,7 +7,8 @@
 #
 # 行为:
 #   1. 查询仓库最新一次「未过期」的 dist 产物（即 Actions 页面上的 dist.zip）
-#   2. 下载并做 sha256 完整性校验（对齐 GitHub 返回的 digest）
+#      —— 构建时间显示为本地时间
+#   2. 下载（显示进度条）并做 sha256 完整性校验（对齐 GitHub 返回的 digest）
 #   3. 解压到临时目录，再 rsync 镜像同步到目标目录
 #      —— 会删除目标目录里多余的旧文件（适合静态站点产物）
 #
@@ -48,11 +49,20 @@ api_text() {   # api_text <url>: JSON 响应输出到 stdout
     fi
 }
 
-api_download() {   # api_download <url> <输出文件>
+auth_token() {   # 取认证 token：优先 gh 登录凭证，其次 GITHUB_TOKEN
     if [ "$HAVE_GH" = 1 ]; then
-        gh api "$1" > "$2"
+        gh auth token 2>/dev/null || true
     elif [ -n "${GITHUB_TOKEN:-}" ]; then
-        curl -fsSL -H "Authorization: Bearer ${GITHUB_TOKEN}" -o "$2" "$1"
+        printf '%s\n' "$GITHUB_TOKEN"
+    fi
+}
+
+api_download() {   # api_download <url> <输出文件> —— 带 curl 进度条下载
+    if command -v curl >/dev/null 2>&1 && TOKEN=$(auth_token) && [ -n "$TOKEN" ]; then
+        curl -fL --progress-bar \
+             -H "Authorization: Bearer ${TOKEN}" -o "$2" "$1"
+    elif [ "$HAVE_GH" = 1 ]; then
+        gh api "$1" > "$2"        # 回退：无 curl 或取不到 token（无进度显示）
     else
         die "没有可用认证：请先 gh auth login，或设置 GITHUB_TOKEN"
     fi
@@ -75,7 +85,9 @@ META=$(printf '%s' "$JSON" | jq -r '
     [ .artifacts[] | select(.expired == false) ]
     | sort_by(.created_at) | last
     | if . == null then "" else
-        [ .id, .archive_download_url, .digest, .created_at,
+        [ .id, .archive_download_url, .digest,
+          (.created_at | fromdateiso8601 | localtime
+                      | strftime("%Y-%m-%d %H:%M:%S")),   # UTC → 本地时间
           (.size_in_bytes | tostring),
           (.workflow_run.id // "-" | tostring),
           (.workflow_run.head_sha // "-") ]
@@ -88,7 +100,7 @@ $META
 EOF
 
 SHA_SHORT=$(printf '%s' "$SHA" | cut -c1-7)
-echo "▸ 最新构建: run #${RUN_ID}  commit ${SHA_SHORT}  (${CREATED})"
+echo "▸ 最新构建: run #${RUN_ID}  commit ${SHA_SHORT}  (本地时间 ${CREATED})"
 
 # ---- 2. 下载 + 校验 --------------------------------------------------------
 TMPROOT=$(mktemp -d "${TMPDIR:-/tmp}/fetch-dist.XXXXXX")
