@@ -8,7 +8,12 @@ import { cp, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { matchGitHub, fetchGitHubCard } from './github.mjs';
+import {
+	matchGitHub,
+	matchGitHubReleases,
+	fetchGitHubCard,
+	fetchGitHubReleaseCard,
+} from './github.mjs';
 import { matchBilibili, fetchBilibiliCard } from './bilibili.mjs';
 import { ASSET_DIR } from './assets.mjs';
 import { flushCache } from './cache.mjs';
@@ -159,8 +164,9 @@ export const linkCards = {
 				return;
 			}
 			const gh = matchGitHub(href);
-			const bili = gh ? null : matchBilibili(href);
-			if (!gh && !bili) return;
+			const ghRel = gh ? null : matchGitHubReleases(href);
+			const bili = gh || ghRel ? null : matchBilibili(href);
+			if (!gh && !ghRel && !bili) return;
 
 			const idx = ctx.indexOf(node);
 			if (idx === undefined || !aloneOnLine(p, idx)) {
@@ -172,7 +178,9 @@ export const linkCards = {
 			try {
 				data = gh
 					? await fetchGitHubCard(gh)
-					: await fetchBilibiliCard(bili);
+					: ghRel
+						? await fetchGitHubReleaseCard(ghRel)
+						: await fetchBilibiliCard(bili);
 			} catch (err) {
 				// 无缓存可回退的抓取失败：保留原始链接
 				debug('跳过（抓取失败）：', href, err?.message ?? err);

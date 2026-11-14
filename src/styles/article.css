@@ -14,3 +14,90 @@
 		margin: 2em auto !important;
 	}
 }
+
+/* ============ 折叠面板 <details>/<summary> ============ */
+
+details {
+	margin: 1.2em 0;
+	padding: 0 1em;
+	border: 1px solid var(--line);
+	border-radius: 0;
+	background: var(--surface);
+	font-size: 0.8em;
+	interpolate-size: allow-keywords;
+}
+
+details:not([open]) {
+	padding-bottom: 0;
+}
+
+details[open] {
+	padding-bottom: 1em;
+}
+
+/* 嵌套折叠收紧外边距 */
+details details {
+	margin: 0.8em 0;
+}
+
+summary {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5em;
+	margin: 0 -1em;
+	padding: 0.6em 1em;
+	list-style: none;
+	cursor: pointer;
+	user-select: none;
+	color: rgb(var(--black));
+	font-family: var(--font-pixel);
+	font-size: 1.1em;
+	line-height: 1.5;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+summary::-webkit-details-marker {
+	display: none;
+}
+
+summary::before {
+	content: "[+]";
+	flex: none;
+	color: var(--green);
+}
+
+details[open] > summary::before {
+	content: "[-]";
+}
+
+summary:hover {
+	background: color-mix(in srgb, var(--green) 8%, transparent);
+	color: var(--green);
+}
+
+summary:focus-visible {
+	outline: 1px dashed var(--green);
+	outline-offset: -4px;
+}
+
+details[open] > summary {
+	margin-bottom: 0.8em;
+	border-bottom: 1px solid rgb(var(--gray-light));
+}
+
+/* 展开/收起高度过渡：仅支持 ::details-content 的浏览器生效，其余直接开合 */
+details::details-content {
+	block-size: 0;
+	overflow: clip;
+	opacity: 0;
+	transition:
+		block-size 0.25s ease,
+		opacity 0.25s ease,
+		content-visibility 0.25s;
+	transition-behavior: allow-discrete;
+}
+
+details[open]::details-content {
+	block-size: auto;
+	opacity: 1;
+}

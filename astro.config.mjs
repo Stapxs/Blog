@@ -8,6 +8,7 @@ import { satteri } from '@astrojs/markdown-satteri';
 import { linkCards, linkCardsAssets } from './plugins/link-cards/index.mjs';
 import { mdAlerts } from './plugins/markdown-alerts/index.mjs';
 import { mdIal } from './plugins/markdown-ial/index.mjs';
+import { headingAnchors } from './plugins/heading-anchors/index.mjs';
 import { pixelDark, pixelLight } from './plugins/shiki-pixel-themes.mjs';
 import { generatePhotosJson, PHOTOS_DIR } from './scripts/photos-exif.mjs';
 
@@ -53,7 +54,8 @@ export default defineConfig({
 	markdown: {
 		processor: satteri({
 			// mdAlerts 需要在最前面执行，它的内容物需要保持原样
-			hastPlugins: [mdAlerts, linkCards, mdIal],
+			// headingAnchors 先于内置 heading-ids 设好标题 id 并追加锚点
+			hastPlugins: [mdAlerts, linkCards, mdIal, headingAnchors],
 		}),
 		/* 代码高亮 */
 		syntaxHighlight: 'shiki',

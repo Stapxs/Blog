@@ -73,27 +73,46 @@
 	border-bottom: 1px solid rgb(var(--gray-light));
 }
 
-.markdown h1::after,
-.markdown h2::after,
-.markdown h3::after {
+/* 标题锚点 */
+.markdown :global(.heading-anchor) {
 	float: right;
 	margin-left: 0.6em;
 	margin-top: 0.15em;
 	color: rgb(var(--gray));
 	font-weight: 400;
 	font-size: 0.7em;
+	text-decoration: none;
+	transition: color 0.15s ease;
 }
 
-.markdown h1::after {
+.markdown :global(.heading-anchor)::after {
+	content: "#";
+}
+
+.markdown h1 :global(.heading-anchor)::after {
 	content: "#1";
 }
 
-.markdown h2::after {
+.markdown h2 :global(.heading-anchor)::after {
 	content: "#2";
 }
 
-.markdown h3::after {
+.markdown h3 :global(.heading-anchor)::after {
 	content: "#3";
+}
+
+.markdown h4 :global(.heading-anchor)::after {
+	content: "#4";
+}
+
+.markdown h5 :global(.heading-anchor)::after {
+	content: "#5";
+}
+
+.markdown :global(.heading-anchor:hover),
+.markdown :global(.heading-anchor:focus-visible) {
+	color: var(--blue);
+	text-decoration: none;
 }
 
 .markdown h6 {
