@@ -69,7 +69,10 @@ const { title, description, image, backToTop = false, toc } = Astro.props;
 
                 var gateOpen = false;
                 try {
-                    gateOpen = !localStorage.getItem("cookie-consent");
+                    // GPC 信号视为「仅必要」授权，不再弹首访窗口
+                    gateOpen =
+                        !localStorage.getItem("cookie-consent") &&
+                        navigator.globalPrivacyControl !== true;
                 } catch (e) {}
                 if (gateOpen)
                     document.documentElement.classList.add("gate-open");

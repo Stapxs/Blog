@@ -79,7 +79,11 @@ export async function cached(key, refetch) {
 			return fresh;
 		} catch (err) {
 			// 网络失败等：有旧数据就回退（保留原 ts，下次构建继续重试）
-			console.warn(`[link-cards] 抓取失败（${key}）：`, err?.message ?? err);
+			console.warn(
+				`[link-cards] 抓取失败（${key}）：`,
+				err?.message ?? err,
+				hit ? '→ 回退旧缓存' : '→ 无缓存，保留原链接',
+			);
 			if (hit) return hit.data ?? null;
 			throw err;
 		} finally {

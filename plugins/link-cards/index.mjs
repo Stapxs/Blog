@@ -22,6 +22,8 @@ import { flushCache } from './cache.mjs';
 const DEBUG = !!process.env.LC_DEBUG;
 /** @param {string} msg @param {unknown[]} args */
 const debug = (msg, ...args) => DEBUG && console.log(`[link-cards] ${msg}`, ...args);
+/** 构建期始终可见的告警：卡片未生成 / 抓取失败不应静默 */
+const warn = (msg, ...args) => console.warn(`[link-cards] ${msg}`, ...args);
 
 /** 行内可忽略字符（空白 / 标点 / 分隔符，不含换行） */
 const IGNORABLE_CHARS = ' \\t:：,，.。、;；!！?？/／\\-—–~=+|│()（）[\\]【】「」『』';
@@ -183,11 +185,11 @@ export const linkCards = {
 						: await fetchBilibiliCard(bili);
 			} catch (err) {
 				// 无缓存可回退的抓取失败：保留原始链接
-				debug('跳过（抓取失败）：', href, err?.message ?? err);
+				warn('卡片抓取失败，保留原链接：', href, err?.message ?? err);
 				return;
 			}
 			if (!data) {
-				debug('跳过（无数据，如 404）：', href);
+				warn('未生成卡片（无数据，可能 404 / 已失效），保留原链接：', href);
 				return;
 			}
 			debug('成卡：', href, '→', data.name);

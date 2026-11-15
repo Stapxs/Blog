@@ -27,12 +27,17 @@ interface ConsentRecord {
     v: number;
     level: ConsentLevel;
     at: number;
+    /** 在 GPC 开启时做出的明确选择，可覆盖 GPC 信号 */
+    gpcOverride?: boolean;
 }
 
 declare global {
     interface Window {
         __bootPending?: boolean;
         __bootPlayed?: boolean;
+    }
+    interface Navigator {
+        readonly globalPrivacyControl?: boolean;
     }
 }
 
@@ -70,6 +75,20 @@ export function readConsent(): ConsentRecord | null {
     return null;
 }
 
+/** Global Privacy Control：浏览器发出退出追踪信号时为 true */
+function gpcEnabled(): boolean {
+    return navigator.globalPrivacyControl === true;
+}
+
+/** 生效授权：GPC 开启时视为「仅必要」，除非用户在本站明确选择过 */
+function effectiveConsent(): ConsentRecord | null {
+    const rec = readConsent();
+    if (gpcEnabled() && rec?.gpcOverride !== true) {
+        return { v: CONSENT_VERSION, level: 'essential', at: 0 };
+    }
+    return rec;
+}
+
 function writeConsent(level: ConsentLevel) {
     try {
         localStorage.setItem(
@@ -78,6 +97,7 @@ function writeConsent(level: ConsentLevel) {
                 v: CONSENT_VERSION,
                 level,
                 at: Date.now(),
+                gpcOverride: gpcEnabled(),
             } satisfies ConsentRecord),
         );
     } catch {
@@ -287,7 +307,7 @@ function closeGate() {
 /* ============ 状态同步 ============ */
 
 function syncGate() {
-    if (readConsent()) {
+    if (effectiveConsent()) {
         document.documentElement.classList.remove('gate-open');
         document.body.style.overflow = '';
         gateEl()?.classList.remove('closing');
@@ -304,7 +324,7 @@ let runBoot: (() => void) | null = null;
 export function initWelcomeGate(boot: () => void) {
     runBoot = boot;
 
-    if (readConsent()?.level === 'all') loadAnalytics();
+    if (effectiveConsent()?.level === 'all') loadAnalytics();
 
     syncGate();
 

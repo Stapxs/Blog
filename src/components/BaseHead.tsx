@@ -1,4 +1,4 @@
-import { SITE_TITLE } from '../consts';
+import { SITE_TITLE, TWITTER_HANDLE } from '../consts';
 
 interface Props {
 	title: string;
@@ -52,6 +52,11 @@ export default function BaseHead({ title, description, image, site, pathname, pa
 				name="twitter:card"
 				content={socialImage ? 'summary_large_image' : 'summary'}
 			/>
+			<meta name="twitter:site" content={TWITTER_HANDLE} />
+			<meta name="twitter:title" content={title} />
+			<meta name="twitter:description" content={description} />
+			{socialImage && <meta name="twitter:image" content={socialImage} />}
+			{socialImage && <meta name="twitter:image:alt" content={title} />}
 		</>
 	);
 }

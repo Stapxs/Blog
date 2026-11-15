@@ -66,6 +66,9 @@ export function fetchGitHubCard(r) {
 		);
 		if (api.status === 404 || api.status === 301 || api.status === 451) {
 			// 仓库不存在 / 已迁移私有 / 被下架：不做卡片
+			console.warn(
+				`[link-cards] GitHub 仓库不可用（HTTP ${api.status}）：${r.owner}/${r.repo}`,
+			);
 			return null;
 		}
 		if (!api.ok) throw new Error(`GitHub API HTTP ${api.status}`);
@@ -117,6 +120,9 @@ export function fetchGitHubReleaseCard(r) {
 		});
 		if (api.status === 404 || api.status === 301 || api.status === 451) {
 			// 无 release / 仓库不可见：不做卡片
+			console.warn(
+				`[link-cards] GitHub release 不可用（HTTP ${api.status}）：${r.owner}/${r.repo}${r.tag ? `@${r.tag}` : '@latest'}`,
+			);
 			return null;
 		}
 		if (!api.ok) throw new Error(`GitHub API HTTP ${api.status}`);

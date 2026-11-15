@@ -44,7 +44,10 @@ export function fetchBilibiliCard(v) {
 		if (!res.ok) throw new Error(`bilibili API HTTP ${res.status}`);
 		const json = await res.json();
 		// code -404 视频不存在；-412 风控等按失败处理（走 stale-if-error）
-		if (json.code === -404) return null;
+		if (json.code === -404) {
+			console.warn(`[link-cards] bilibili 视频不存在（-404）：${key}`);
+			return null;
+		}
 		if (json.code !== 0) throw new Error(`bilibili API code ${json.code}`);
 		const d = json.data;
 
