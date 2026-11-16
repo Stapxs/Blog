@@ -1,0 +1,14 @@
+---
+import Root from "../layouts/Root.astro";
+import QuotesView from "../components/pages/QuotesView";
+import { parseQuotes } from "../scripts/quotesData";
+import { SITE_TITLE } from "../consts";
+import quotesRaw from "../content/blog/ss-ana.md?raw";
+
+// 构建期从《林槐语录》原文解析，文章更新后这里自动同步
+const quotes = parseQuotes(quotesRaw);
+---
+
+<Root title={`碎碎念 | ${SITE_TITLE}`} description="抽取一条碎碎念">
+    <QuotesView quotes={quotes} />
+</Root>

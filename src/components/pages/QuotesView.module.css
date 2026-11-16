@@ -1,0 +1,378 @@
+.machine {
+	margin: 0.5em 0 2em 0;
+	background: var(--surface);
+	border: 1px solid var(--line);
+}
+
+.machine button:focus-visible,
+.machine a:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.head {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1em;
+	padding: 0.5em 0.9em;
+	border-bottom: 1px solid var(--line);
+}
+
+.brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45em;
+	color: var(--green);
+	font-size: 0.9em;
+	letter-spacing: 0.05em;
+}
+
+.ver {
+	color: rgb(var(--gray));
+	font-size: 0.8em;
+}
+
+.counter {
+	color: rgb(var(--gray));
+	font-size: 0.8em;
+	font-variant-numeric: tabular-nums;
+}
+
+.headRight {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.7em;
+}
+
+.iconBtn {
+	display: inline-flex;
+	padding: 0.25em;
+	background: none;
+	border: 1px solid transparent;
+	color: rgb(var(--gray));
+}
+
+.iconBtn:hover {
+	color: var(--green);
+	border-color: var(--line);
+}
+
+.iconBtn[aria-pressed='true'] {
+	color: var(--green);
+}
+
+.iconBtn[aria-pressed='true'] [data-fs-enter],
+.iconBtn[aria-pressed='false'] [data-fs-exit] {
+	display: none;
+}
+
+/* ===== 抽取舞台 ===== */
+.stage {
+	position: relative;
+	display: flex;
+	min-height: 15em;
+	overflow: hidden;
+	border-bottom: 1px solid var(--line);
+	background:
+		radial-gradient(
+			ellipse at 50% 120%,
+			color-mix(in srgb, var(--purple) 10%, transparent),
+			transparent 65%
+		),
+		repeating-linear-gradient(
+			0deg,
+			color-mix(in srgb, var(--fg) 4%, transparent) 0 1px,
+			transparent 1px 28px
+		),
+		repeating-linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--fg) 4%, transparent) 0 1px,
+			transparent 1px 28px
+		);
+}
+
+.stars {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.stageInner {
+	position: relative;
+	z-index: 1;
+	margin: auto;
+	padding: 2.2em 1.4em;
+	max-width: 46em;
+	text-align: center;
+}
+
+.quote {
+	margin: 0;
+	color: rgb(var(--black));
+	font-size: clamp(1.15em, 2.4vw, 1.65em);
+	line-height: 1.9;
+}
+
+.bracket {
+	color: var(--pink);
+}
+
+.meta {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.8em;
+	min-height: 1.8em;
+	margin-top: 1.2em;
+	font-size: 0.85em;
+}
+
+.from {
+	color: var(--blue);
+}
+
+.date {
+	padding: 0 0.5em;
+	color: var(--orange);
+	border: 1px solid color-mix(in srgb, var(--orange) 45%, transparent);
+	font-size: 0.9em;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ===== 自动播放进度条 ===== */
+.autoTrack {
+	height: 3px;
+	background: rgb(var(--gray-light));
+}
+
+.autoBar {
+	height: 100%;
+	background: var(--green);
+	transform: scaleX(0);
+	transform-origin: left;
+}
+
+/* ===== 控制区 ===== */
+.controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.7em;
+	padding: 0.9em;
+	border-bottom: 1px solid var(--line);
+}
+
+.draw {
+	flex: 1;
+	min-width: 10em;
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5em;
+	padding: 0.65em 1em;
+	font: inherit;
+	font-size: 1.05em;
+	background: color-mix(in srgb, var(--green) 14%, transparent);
+	color: var(--green);
+	border: 1px solid var(--green);
+}
+
+.draw:hover {
+	background: var(--green);
+	color: var(--bg);
+}
+
+.draw:active {
+	transform: translateY(1px);
+}
+
+.kbd {
+	padding: 0 0.4em;
+	font: inherit;
+	font-size: 0.7em;
+	border: 1px solid currentColor;
+	opacity: 0.7;
+}
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45em;
+	padding: 0.65em 0.9em;
+	font: inherit;
+	font-size: 0.9em;
+	background: none;
+	color: rgb(var(--black));
+	border: 1px solid var(--line);
+}
+
+.btn:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.btn[aria-pressed='true'] {
+	border-color: var(--orange);
+	color: var(--orange);
+}
+
+.btn[data-copied] {
+	border-color: var(--green);
+	color: var(--green);
+}
+
+.btn[aria-pressed='true'] [data-auto-play],
+.btn[aria-pressed='false'] [data-auto-pause] {
+	display: none;
+}
+
+/* ===== 年份筛选 ===== */
+.filters {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	padding: 0.8em 0.9em;
+	border-bottom: 1px solid var(--line);
+}
+
+.filterLabel {
+	margin-right: 0.2em;
+	color: rgb(var(--gray));
+	font-size: 0.8em;
+}
+
+.chip {
+	--chip: var(--fg);
+	position: relative;
+	overflow: hidden;
+	padding: 0.25em 0.7em 0.45em;
+	font: inherit;
+	font-size: 0.82em;
+	background: none;
+	border: 1px solid var(--line);
+	color: rgb(var(--black));
+}
+
+.chip:hover {
+	border-color: var(--chip);
+	color: var(--chip);
+}
+
+.chip[data-active] {
+	border-color: var(--chip);
+	color: var(--chip);
+	background: color-mix(in srgb, var(--chip) 14%, transparent);
+}
+
+.chipCount {
+	margin-left: 0.3em;
+	font-size: 0.85em;
+	opacity: 0.65;
+}
+
+.chipBar {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	height: 2px;
+	background: var(--chip);
+	opacity: 0.55;
+}
+
+/* ===== 机脚 ===== */
+.foot {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.6em 1em;
+	padding: 0.6em 0.9em;
+	color: rgb(var(--gray));
+	font-size: 0.8em;
+}
+
+.sourceLink {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2em;
+	color: var(--blue);
+	text-decoration: none;
+}
+
+.sourceLink:hover {
+	color: var(--blue);
+	text-decoration: underline;
+}
+
+/* ===== 全屏（原生 :fullscreen 与 iOS 固定定位回退共用） ===== */
+.machine:fullscreen,
+.machine[data-fs-fallback] {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	margin: 0;
+	overflow: auto;
+	background: var(--bg);
+	border: none;
+}
+
+.machine[data-fs-fallback] {
+	position: fixed;
+	inset: 0;
+	z-index: 9000;
+}
+
+.machine:fullscreen .head,
+.machine:fullscreen .autoTrack,
+.machine:fullscreen .controls,
+.machine:fullscreen .filters,
+.machine:fullscreen .foot,
+.machine[data-fs-fallback] .head,
+.machine[data-fs-fallback] .autoTrack,
+.machine[data-fs-fallback] .controls,
+.machine[data-fs-fallback] .filters,
+.machine[data-fs-fallback] .foot {
+	flex: none;
+}
+
+.machine:fullscreen .stage,
+.machine[data-fs-fallback] .stage {
+	flex: 1;
+	min-height: 0;
+}
+
+.machine:fullscreen .stageInner,
+.machine[data-fs-fallback] .stageInner {
+	max-width: 60em;
+	padding: 2em 1.6em;
+}
+
+.machine:fullscreen .quote,
+.machine[data-fs-fallback] .quote {
+	font-size: clamp(1.5em, 3.6vw, 2.8em);
+}
+
+@media (max-width: 720px) {
+	.stage {
+		min-height: 13em;
+	}
+
+	.stageInner {
+		padding: 1.6em 0.9em;
+	}
+
+	.draw {
+		flex-basis: 100%;
+	}
+
+	.btn {
+		flex: 1;
+		justify-content: center;
+	}
+}

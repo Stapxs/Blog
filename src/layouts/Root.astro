@@ -25,6 +25,7 @@ import "../components/pages/EnvView.module.css";
 import "../components/pages/AboutView.module.css";
 import "../components/pages/FriendsView.module.css";
 import "../components/pages/PhotosView.module.css";
+import "../components/pages/QuotesView.module.css";
 import "@waline/client/waline.css";
 import "../styles/waline.css";
 import "../styles/comments.css";
@@ -649,6 +650,7 @@ const { title, description, image, backToTop = false, toc } = Astro.props;
         import { initToc } from "../scripts/toc";
         import { initWelcomeGate } from "../scripts/welcomeGate";
         import { initSettings, textMotionOk } from "../scripts/settings";
+        import { initQuotes } from "../scripts/quotes";
 
         const html = document.documentElement;
         const MOTION_OK = textMotionOk;
@@ -1082,6 +1084,7 @@ const { title, description, image, backToTop = false, toc } = Astro.props;
         /* 文章目录 */
         initToc();
         document.addEventListener("astro:after-swap", initToc);
+        initQuotes();
 
         /* ================= umami 埋点 ================= */
         /* 外链点击 */

@@ -9,6 +9,7 @@ import {
 	Label,
 	Monitor,
 	Moon,
+	QuoteTextInline,
 	Rss,
 	Search,
 	Sun,
@@ -61,6 +62,10 @@ export default function Header({ siteTitle, currentPath }: Props) {
 				<HeaderLink href="/photos" currentPath={currentPath}>
 					<span className={styles.linkText}>./Photos</span>
 					<Images className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
+				</HeaderLink>
+				<HeaderLink href="/quotes" currentPath={currentPath}>
+					<span className={styles.linkText}>./Quotes</span>
+					<QuoteTextInline className={styles.linkIcon} data-boot="nav-icons" width={24} height={24} aria-hidden="true" />
 				</HeaderLink>
 				<HeaderLink href="/friends" currentPath={currentPath}>
 					<span className={styles.linkText}>./Friends</span>
