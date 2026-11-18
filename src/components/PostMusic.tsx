@@ -12,24 +12,24 @@ interface Props {
 
 export default function PostMusic({ song }: Props) {
 	return (
-		<div className={styles.box}>
+		<div className="lc lc-music">
 			<img
-				className={styles.cover}
+				className="lc-main"
 				src={song.cover}
 				alt=""
 				loading="lazy"
 				decoding="async"
 			/>
-			<div className={styles.info}>
-				<div className={styles.nameLine}>
-					<span className={styles.name}>{song.name}</span>
+			<div className="lc-info">
+				<div className="lc-name">
+					<span className="lc-title">{song.name}</span>
 					{song.tns && <span className={styles.tns}>({song.tns})</span>}
 				</div>
-				<div className={styles.artists}>{song.artists}</div>
+				<div className="lc-desc">{song.artists}</div>
 			</div>
 			<button
 				type="button"
-				className={styles.play}
+				className={`lc-go ${styles.play}`}
 				data-song-id={song.id}
 				data-song-name={song.name}
 				data-song-tns={song.tns ?? undefined}

@@ -1,5 +1,5 @@
 ---
-title: '通过 root ssh 为小米 BE5000 安装 OpenWrt'
+title: '小米 BE5000 安装 OpenWrt'
 description: ''
 category: '折腾'
 tags: ['小米', '路由器']

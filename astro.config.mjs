@@ -5,7 +5,7 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
 import { satteri } from '@astrojs/markdown-satteri';
-import { linkCards, linkCardsAssets } from './plugins/link-cards/index.mjs';
+import { linkCards, linkCardsAssets, setLinkCardsSite } from './plugins/link-cards/index.mjs';
 import { mdAlerts } from './plugins/markdown-alerts/index.mjs';
 import { mdIal } from './plugins/markdown-ial/index.mjs';
 import { headingAnchors } from './plugins/heading-anchors/index.mjs';
@@ -48,8 +48,11 @@ function photosExif() {
 }
 
 // https://astro.build/config
+const SITE_URL = 'https://blog.stapxs.cn';
+setLinkCardsSite(SITE_URL);
+
 export default defineConfig({
-	site: 'https://blog.stapxs.cn',
+	site: SITE_URL,
 	integrations: [react(), mdx(), sitemap(), photosExif(), linkCardsAssets()],
 	markdown: {
 		processor: satteri({

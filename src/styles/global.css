@@ -121,7 +121,7 @@ main {
 	box-sizing: border-box;
 	width: calc(var(--content-width) + 2em);
 	max-width: calc(100% - 2em);
-	margin: 2rem auto auto auto;
+	margin: 0.5em auto auto auto;
 	padding: 2em 2em 0 2em;
 	border: 1px solid var(--line);
 }
@@ -214,7 +214,7 @@ hr {
 		--page-zoom: 0.85;
 	}
 	main {
-		padding: 1em 1em 0 1em;
+		padding: 0.5em 1em 0 1em;
 	}
 }
 

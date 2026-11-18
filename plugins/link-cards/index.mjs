@@ -18,6 +18,54 @@ import { matchBilibili, fetchBilibiliCard } from './bilibili.mjs';
 import { ASSET_DIR } from './assets.mjs';
 import { flushCache } from './cache.mjs';
 
+let siteUrl = new URL('https://blog.stapxs.cn');
+
+export function setLinkCardsSite(url) {
+	siteUrl = new URL(url);
+}
+
+/** 只将本站已知文章归档 URL 识别为站内卡片。 */
+function matchInternal(href) {
+	let url;
+	try {
+		url = new URL(href, siteUrl);
+	} catch {
+		return null;
+	}
+	if (url.origin !== siteUrl.origin) return null;
+
+	const match = url.pathname.match(/^\/archives\/([^/]+)\/?$/);
+	if (!match) return null;
+	let slug;
+	try {
+		slug = decodeURIComponent(match[1]);
+	} catch {
+		return null;
+	}
+	const contentDir = join(process.cwd(), 'src', 'content', 'blog');
+	if (
+		!existsSync(join(contentDir, `${slug}.md`)) &&
+		!existsSync(join(contentDir, `${slug}.mdx`))
+	) return null;
+	return { slug, url };
+}
+
+function internalCardData(node, match) {
+	const label = (node.children ?? [])
+		.filter((child) => child.type === 'text')
+		.map((child) => child.value)
+		.join(' ')
+		.trim();
+	const title = label && !/^https?:\/\//i.test(label)
+		? label
+		: match.slug.replace(/[-_]+/g, ' ');
+	return {
+		type: 'internal',
+		name: title,
+		desc: '林槐的杂货铺 · 站内文章',
+	};
+}
+
 /** 调试开关：LC_DEBUG=1 时输出转换决策过程 */
 const DEBUG = !!process.env.LC_DEBUG;
 /** @param {string} msg @param {unknown[]} args */
@@ -54,16 +102,16 @@ function text(value) {
  */
 function buildCard(href, data) {
 	const isGh = data.type === 'gh';
+	const isInternal = data.type === 'internal';
 	const main = data.cover ?? data.icon;
 	const mini = data.cover ? data.icon : null;
 
 	return el(
 		'a',
 		{
-			className: ['lc', isGh ? 'lc-gh' : 'lc-bili'],
+			className: ['lc', isInternal ? 'lc-internal' : isGh ? 'lc-gh' : 'lc-bili'],
 			href,
-			target: '_blank',
-			rel: 'noopener noreferrer',
+			...(!isInternal && { target: '_blank', rel: 'noopener noreferrer' }),
 		},
 		[
 			main &&
@@ -96,9 +144,11 @@ function buildCard(href, data) {
 					'span',
 					{
 						className: [
-							isGh
-								? 'pixelart-icons-font-external-link'
-								: 'pixelart-icons-font-play',
+							isInternal
+								? 'pixelart-icons-font-arrow-right'
+								: isGh
+									? 'pixelart-icons-font-external-link'
+									: 'pixelart-icons-font-play',
 						],
 						'aria-hidden': 'true',
 					},
@@ -168,7 +218,8 @@ export const linkCards = {
 			const gh = matchGitHub(href);
 			const ghRel = gh ? null : matchGitHubReleases(href);
 			const bili = gh || ghRel ? null : matchBilibili(href);
-			if (!gh && !ghRel && !bili) return;
+			const internal = gh || ghRel || bili ? null : matchInternal(href);
+			if (!gh && !ghRel && !bili && !internal) return;
 
 			const idx = ctx.indexOf(node);
 			if (idx === undefined || !aloneOnLine(p, idx)) {
@@ -178,9 +229,11 @@ export const linkCards = {
 
 			let data;
 			try {
-				data = gh
-					? await fetchGitHubCard(gh)
-					: ghRel
+				data = internal
+					? internalCardData(node, internal)
+					: gh
+						? await fetchGitHubCard(gh)
+						: ghRel
 						? await fetchGitHubReleaseCard(ghRel)
 						: await fetchBilibiliCard(bili);
 			} catch (err) {

@@ -94,13 +94,15 @@ music: 123456                      # 可选，网易云歌曲 id
 
 ### > 图片排版（IAL 属性语法）
 
-正文里可以用 Kramdown 风格的行内属性列表给图片 / 链接附加 class、id 或内联样式（构建期由 `plugins/markdown-ial` 处理）：
+`.md` 正文里可以用 Kramdown 风格的行内属性列表给图片 / 链接附加 class、id 或内联样式（构建期由 `plugins/markdown-ial` 处理）：
 
 ```markdown
 ![图片](./a.png){: class=right}
 ![图片](./a.png){: .rounded #hero-img style="width:120px"}
 [链接](/about/){: .btn}
 ```
+
+`.mdx` 会先按 MDX/JSX 语法解析，不能使用 `{:` IAL；需要给图片或链接添加属性时，请使用 MDX 支持的 JSX 属性语法。
 
 内置排版类定义在 `src/styles/article.css`，对所有文章生效：
 
