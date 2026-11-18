@@ -36,7 +36,7 @@ Astro 可以混用前端框架来开发，当然本博客全都使用 React 编�
 ### Markdown 处理器
 Astro 默认提供 Sätteri 和 Unified 两款 Markdown 处理器，它们在新增语法、改链接或代码块的输出、给元素加属性等方面都有很强的自由性，这让对 Markdown 渲染的扩展非常的自由。后者的社区生态也不错，有很多现成的插件；前者比较新（现在 Astro 默认用它），生态略差但是性能比后者更好。
 
-![Sätteri-plugins](../../assets/Sätteri-plugins.png){: class=right}
+![Sätteri-plugins](../../assets/Satteri-plugins.png){: class=right}
 
 在我这，链接卡片、标题 ID、Github Alerts 语法、Kramdown 语法支持都是通过插件来支持的：
 https://github.com/Stapxs/Blog
